@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TÜBİTAK - Konya Hexologic Macerası (SÜRÜM V6)</title>
+    <title>TÜBİTAK - Konya Hexologic Macerası (SÜRÜM V7)</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -27,7 +27,7 @@
         
         .version-badge {
             background: #3b82f6;
-            color: #white;
+            color: white;
             font-size: 0.9rem;
             font-weight: bold;
             padding: 4px 12px;
@@ -40,14 +40,14 @@
         .timer { font-size: 1.4rem; color: #facc15; margin: 15px 0; font-weight: bold; }
         
         .hex-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 25px 0; }
-        .hex-row { display: flex; gap: 10px; justify-content: center; }
+        .hex-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
         
         .hex { 
-            width: 75px; height: 85px; 
+            width: 70px; height: 80px; 
             background: #fde047; 
             position: relative; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 1.6rem; font-weight: bold; color: #1e293b; 
+            font-size: 1.5rem; font-weight: bold; color: #1e293b; 
             cursor: pointer; 
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
             transition: 0.2s;
@@ -56,7 +56,16 @@
         }
         .hex:hover { background: #facc15; transform: scale(1.05); }
         
+        /* Sabit ve Kenar Hedef Hücreleri */
         .hex.fixed { background: #f97316; color: white; cursor: default; }
+        .hex.target-tip { background: #0284c7; color: white; font-size: 1.0rem; cursor: default; box-shadow: 0 0 10px rgba(2,132,199,0.5); }
+
+        /* Doğru olunca yeşil parıltı kaplaması */
+        .hex.solved-line { 
+            background: #4ade80 !important; 
+            color: #064e3b !important;
+            box-shadow: 0 0 15px #4ade80;
+        }
 
         .btn { background: #f43f5e; color: white; border: none; padding: 12px 28px; font-size: 1.1rem; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.2s; box-shadow: 0 4px 10px rgba(244,63,94,0.4); }
         .btn:hover { background: #e11d48; transform: translateY(-2px); }
@@ -74,7 +83,7 @@
 <body>
 
 <div class="container" id="app">
-    <div class="version-badge">SÜRÜM V6 - Tübitak Kırlangıçları</div>
+    <div class="version-badge">SÜRÜM V7 - Tübitak Kırlangıçları</div>
     <h1>KONYA HEXOLOGİC</h1>
     <p>TÜBİTAK Proje Bulmaca İstasyonu</p>
 
@@ -90,8 +99,9 @@
     <div id="screen-game" class="hidden">
         <h3 id="levelTitle" style="color: #38bdf8;">1. Bölüm</h3>
         <div class="timer" id="timer">Kalan Süre: 03:00</div>
-        <p style="font-size: 0.95rem; color: #cbd5e1;" id="ruleDesc">Altıgenlere tıklayarak (1-3) sayılarını yerleştir. Üst satır toplamını <span id="targetSpan" style="color:#facc15; font-weight:bold;">6</span> yap!</p>
+        <p style="font-size: 0.95rem; color: #cbd5e1;">Hücrelere tıklayarak (1-3) sayılarını yerleştir. Kenarlardaki hedef toplamları sağlayınca yeşil yanacaktır!</p>
         
+        <!-- Kenar Hedefli Hexagon Izgarası -->
         <div class="hex-container" id="hexGridContainer"></div>
         
         <button class="btn" onclick="playSound(); checkPuzzle();">Bölümü Tamamla</button>
@@ -143,17 +153,17 @@
     }
 
     let currentLevel = 1;
-    let score = 0; // Başlangıç puanı 0
+    let score = 0;
     let timerInterval;
     let timeLeft = 180;
     let playerName = "";
-    let gridValues = [1, 1, 1, 1, 1];
+    let gridValues = [1, 1, 1, 1];
 
     const levelsData = [
         {
             title: "1. Bölüm: Sille Macerası (3 Dk)",
             time: 180,
-            target: 6,
+            targets: { row1: 6, row2: 6 },
             question: {
                 q: "Konya'nın tarihi dokusuyla ünlü, Rum ve Türk kültürünün izlerini taşıyan tarihi mahallesi / sit alanı hangisidir?",
                 options: ["A) Sille", "B) İvriz", "C) Çatalhöyük", "D) Lystra"],
@@ -163,7 +173,7 @@
         {
             title: "2. Bölüm: Çatalhöyük Gizemi (5 Dk)",
             time: 300,
-            target: 7,
+            targets: { row1: 7, row2: 7 },
             question: {
                 q: "Dünyanın en eski yerleşim yerlerinden biri olan ve neolitik döneme ev sahipliği yapan Konya'daki UNESCO miras alanı neresidir?",
                 options: ["A) Alaeddin Tepesi", "B) Çatalhöyük", "C) Karatay Medresesi", "D) Aziziye Camii"],
@@ -173,7 +183,7 @@
         {
             title: "3. Bölüm: Selçuklu Başkenti (5 Dk)",
             time: 300,
-            target: 8,
+            targets: { row1: 8, row2: 8 },
             question: {
                 q: "Selçuklu Devleti'ne başkentlik yapmış Konya'da, Alaeddin Tepesi üzerinde bulunan tarihi caminin adı nedir?",
                 options: ["A) Selimiye Camii", "B) Aziziye Camii", "C) Alaeddin Camii", "D) İplikçi Camii"],
@@ -195,8 +205,7 @@
         const data = levelsData[currentLevel - 1];
         timeLeft = data.time;
         document.getElementById("levelTitle").innerText = data.title;
-        document.getElementById("targetSpan").innerText = data.target;
-        gridValues = [1, 1, 1, 1, 1];
+        gridValues = [1, 1, 1, 1];
         
         startTimer();
         renderHexGrid();
@@ -219,44 +228,72 @@
     function renderHexGrid() {
         const container = document.getElementById("hexGridContainer");
         container.innerHTML = "";
+        const data = levelsData[currentLevel - 1];
 
         container.innerHTML = `
             <div class="hex-row">
                 <div class="hex fixed">2</div>
                 <div class="hex" onclick="playSound(); changeHex(0)" id="h0">${gridValues[0]}</div>
                 <div class="hex" onclick="playSound(); changeHex(1)" id="h1">${gridValues[1]}</div>
+                <div class="hex target-tip">Hedef: ${data.targets.row1}</div>
             </div>
-            <div class="hex-row" style="margin-left: 25px;">
-                <div class="hex fixed">5</div>
+            <div class="hex-row" style="margin-left: 20px;">
+                <div class="hex fixed">2</div>
                 <div class="hex" onclick="playSound(); changeHex(2)" id="h2">${gridValues[2]}</div>
                 <div class="hex" onclick="playSound(); changeHex(3)" id="h3">${gridValues[3]}</div>
-                <div class="hex fixed">2</div>
-            </div>
-            <div class="hex-row">
-                <div class="hex fixed">4</div>
-                <div class="hex" onclick="playSound(); changeHex(4)" id="h4">${gridValues[4]}</div>
-                <div class="hex fixed">6</div>
+                <div class="hex target-tip">Hedef: ${data.targets.row2}</div>
             </div>
         `;
+        checkLiveSums();
     }
 
     function changeHex(index) {
         gridValues[index] = (gridValues[index] % 3) + 1;
         document.getElementById(`h${index}`).innerText = gridValues[index];
+        checkLiveSums();
+    }
+
+    function checkLiveSums() {
+        const data = levelsData[currentLevel - 1];
+        
+        let sum1 = 2 + gridValues[0] + gridValues[1];
+        let sum2 = 2 + gridValues[2] + gridValues[3];
+
+        const h0 = document.getElementById("h0");
+        const h1 = document.getElementById("h1");
+        const h2 = document.getElementById("h2");
+        const h3 = document.getElementById("h3");
+
+        if(sum1 === data.targets.row1) {
+            if(h0) h0.classList.add("solved-line");
+            if(h1) h1.classList.add("solved-line");
+        } else {
+            if(h0) h0.classList.remove("solved-line");
+            if(h1) h1.classList.remove("solved-line");
+        }
+
+        if(sum2 === data.targets.row2) {
+            if(h2) h2.classList.add("solved-line");
+            if(h3) h3.classList.add("solved-line");
+        } else {
+            if(h2) h2.classList.remove("solved-line");
+            if(h3) h3.classList.remove("solved-line");
+        }
     }
 
     function checkPuzzle() {
         clearInterval(timerInterval);
         const data = levelsData[currentLevel - 1];
-        let totalSum = 2 + gridValues[0] + gridValues[1];
+        
+        let sum1 = 2 + gridValues[0] + gridValues[1];
+        let sum2 = 2 + gridValues[2] + gridValues[3];
 
-        if(totalSum === data.target) {
-            // Sadece bulmaca geçiş hakkı verir, puan eklenmez (Puanlar sadece doğru sorulardan gelir)
+        if(sum1 === data.targets.row1 && sum2 === data.targets.row2) {
             document.getElementById("screen-game").classList.add("hidden");
             document.getElementById("screen-question").classList.remove("hidden");
             loadQuestion();
         } else {
-            gameOver(`Bulmaca yanlış çözüldü! Üst satır toplamı ${data.target} olmalıydı (Senin yaptığın: ${totalSum}). Elendiniz!`);
+            gameOver(`Bulmaca yanlış çözüldü! Tüm hedef toplamlar tutmalı (1.Satır: ${sum1}/${data.targets.row1}, 2.Satır: ${sum2}/${data.targets.row2}). Elendiniz!`);
         }
     }
 
@@ -283,7 +320,7 @@
 
     function checkAnswer(selected, correct) {
         if(selected === correct) {
-            score += 5; // Sadece doğru cevapta +5 puan eklenir (Max 15)
+            score += 5;
             alert("Tebrikler, doğru cevap! +5 Puan kazandın.");
         } else {
             alert("Yanlış cevap! Puan alamadın.");
@@ -306,10 +343,10 @@
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v6") || "[]");
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v7") || "[]");
         lb.push({ name: playerName, score: score });
         lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("tubitak_lb_v6", JSON.stringify(lb));
+        localStorage.setItem("tubitak_lb_v7", JSON.stringify(lb));
 
         const tbody = document.getElementById("leaderboardBody");
         tbody.innerHTML = "";
