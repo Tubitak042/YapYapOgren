@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TÜBİTAK - Konya Hexologic Macerası</title>
+    <title>TÜBİTAK - Konya Hexologic Macerası (SÜRÜM V6)</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -24,18 +24,30 @@
             100% { background-position: 0% 50%; }
         }
         .container { max-width: 750px; width: 100%; background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        
+        .version-badge {
+            background: #3b82f6;
+            color: #white;
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
         h1 { color: #f43f5e; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .timer { font-size: 1.4rem; color: #facc15; margin: 15px 0; font-weight: bold; }
         
-        .hex-container { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 25px 0; }
-        .hex-row { display: flex; gap: 8px; justify-content: center; }
+        .hex-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 25px 0; }
+        .hex-row { display: flex; gap: 10px; justify-content: center; }
         
         .hex { 
-            width: 70px; height: 80px; 
+            width: 75px; height: 85px; 
             background: #fde047; 
             position: relative; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 1.5rem; font-weight: bold; color: #1e293b; 
+            font-size: 1.6rem; font-weight: bold; color: #1e293b; 
             cursor: pointer; 
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
             transition: 0.2s;
@@ -44,15 +56,7 @@
         }
         .hex:hover { background: #facc15; transform: scale(1.05); }
         
-        /* Doğru yapıldığında yeşil çerçeve efekti */
-        .hex.solved { 
-            background: #4ade80 !important; 
-            border-color: #16a34a !important;
-            box-shadow: 0 0 15px #4ade80;
-        }
-
         .hex.fixed { background: #f97316; color: white; cursor: default; }
-        .hex.clue { background: #0284c7; color: white; font-size: 1.1rem; cursor: default; }
 
         .btn { background: #f43f5e; color: white; border: none; padding: 12px 28px; font-size: 1.1rem; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.2s; box-shadow: 0 4px 10px rgba(244,63,94,0.4); }
         .btn:hover { background: #e11d48; transform: translateY(-2px); }
@@ -70,13 +74,15 @@
 <body>
 
 <div class="container" id="app">
+    <div class="version-badge">SÜRÜM V6 - Tübitak Kırlangıçları</div>
     <h1>KONYA HEXOLOGİC</h1>
     <p>TÜBİTAK Proje Bulmaca İstasyonu</p>
 
     <!-- Giriş Ekranı -->
     <div id="screen-start">
-        <p style="margin: 20px 0; font-size: 1.1rem;">Yarışmaya başlamak için adını ve soyadını gir:</p>
-        <input type="text" id="playerName" placeholder="Adınız Soyadınız" style="padding: 12px; font-size: 1.1rem; border-radius: 10px; border: 1px solid #64748b; width: 80%; max-width: 300px; margin-bottom: 20px; background: rgba(15,23,42,0.8); color: white; text-align: center;"><br>
+        <p style="margin: 15px 0; font-size: 1.1rem;">Yarışmaya başlamak için adını ve soyadını gir:</p>
+        <input type="text" id="playerName" placeholder="Adınız Soyadınız" style="padding: 12px; font-size: 1.1rem; border-radius: 10px; border: 1px solid #64748b; width: 80%; max-width: 300px; margin-bottom: 15px; background: rgba(15,23,42,0.8); color: white; text-align: center;"><br>
+        <p style="color: #38bdf8; font-weight: bold; margin-bottom: 20px;">Proje Takımı: Tübitak Kırlangıçları</p>
         <button class="btn" onclick="playSound(); startGame();">Oyunu Başlat</button>
     </div>
 
@@ -84,7 +90,7 @@
     <div id="screen-game" class="hidden">
         <h3 id="levelTitle" style="color: #38bdf8;">1. Bölüm</h3>
         <div class="timer" id="timer">Kalan Süre: 03:00</div>
-        <p style="font-size: 0.95rem; color: #cbd5e1;">Altıgenlere tıklayarak sayıları değiştir. Hedef toplamlara ulaşınca yeşil kenar kaplaması aktif olur!</p>
+        <p style="font-size: 0.95rem; color: #cbd5e1;" id="ruleDesc">Altıgenlere tıklayarak (1-3) sayılarını yerleştir. Üst satır toplamını <span id="targetSpan" style="color:#facc15; font-weight:bold;">6</span> yap!</p>
         
         <div class="hex-container" id="hexGridContainer"></div>
         
@@ -94,13 +100,21 @@
     <!-- Soru Ekranı -->
     <div id="screen-question" class="hidden">
         <h3 style="color: #facc15; font-size: 1.4rem;">Konya Kültür & Tarih Sorusu (+5 Puan)</h3>
-        <p id="questionText" style="font-size: 1.15rem; margin: 25px 0; line-height: 1.6;"></p>
+        <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 10px;">(Doğru cevap +5 puan kazandırır. Maksimum skor 15 puandır.)</p>
+        <p id="questionText" style="font-size: 1.15rem; margin: 20px 0; line-height: 1.6;"></p>
         <div class="options" id="optionsContainer"></div>
+    </div>
+
+    <!-- Elenme Ekranı -->
+    <div id="screen-gameover" class="hidden">
+        <h2 style="color: #f43f5e;">Oyun Bitti - Elendiniz!</h2>
+        <p id="failReason" style="font-size: 1.1rem; margin: 20px 0;"></p>
+        <button class="btn" onclick="playSound(); location.reload();">Tekrar Dene</button>
     </div>
 
     <!-- Liderlik Tablosu -->
     <div id="screen-leaderboard" class="hidden">
-        <h2>🏆 TÜBİTAK Liderlik Sıralaması</h2>
+        <h2>🏆 TÜBİTAK Liderlik Sıralaması (Max 15 Puan)</h2>
         <table>
             <thead>
                 <tr><th>Sıra</th><th>İsim</th><th>Toplam Puan</th></tr>
@@ -129,18 +143,17 @@
     }
 
     let currentLevel = 1;
-    let score = 0;
+    let score = 0; // Başlangıç puanı 0
     let timerInterval;
     let timeLeft = 180;
     let playerName = "";
-    
-    let currentGridValues = [2, 1, 2, 1, 2];
+    let gridValues = [1, 1, 1, 1, 1];
 
     const levelsData = [
         {
             title: "1. Bölüm: Sille Macerası (3 Dk)",
             time: 180,
-            targetSum: 6,
+            target: 6,
             question: {
                 q: "Konya'nın tarihi dokusuyla ünlü, Rum ve Türk kültürünün izlerini taşıyan tarihi mahallesi / sit alanı hangisidir?",
                 options: ["A) Sille", "B) İvriz", "C) Çatalhöyük", "D) Lystra"],
@@ -150,7 +163,7 @@
         {
             title: "2. Bölüm: Çatalhöyük Gizemi (5 Dk)",
             time: 300,
-            targetSum: 7,
+            target: 7,
             question: {
                 q: "Dünyanın en eski yerleşim yerlerinden biri olan ve neolitik döneme ev sahipliği yapan Konya'daki UNESCO miras alanı neresidir?",
                 options: ["A) Alaeddin Tepesi", "B) Çatalhöyük", "C) Karatay Medresesi", "D) Aziziye Camii"],
@@ -160,7 +173,7 @@
         {
             title: "3. Bölüm: Selçuklu Başkenti (5 Dk)",
             time: 300,
-            targetSum: 8,
+            target: 8,
             question: {
                 q: "Selçuklu Devleti'ne başkentlik yapmış Konya'da, Alaeddin Tepesi üzerinde bulunan tarihi caminin adı nedir?",
                 options: ["A) Selimiye Camii", "B) Aziziye Camii", "C) Alaeddin Camii", "D) İplikçi Camii"],
@@ -182,7 +195,8 @@
         const data = levelsData[currentLevel - 1];
         timeLeft = data.time;
         document.getElementById("levelTitle").innerText = data.title;
-        currentGridValues = [1, 2, 1, 2, 1];
+        document.getElementById("targetSpan").innerText = data.target;
+        gridValues = [1, 1, 1, 1, 1];
         
         startTimer();
         renderHexGrid();
@@ -196,8 +210,7 @@
             document.getElementById("timer").innerText = `Kalan Süre: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             if(timeLeft <= 0) {
                 clearInterval(timerInterval);
-                alert("Süreniz bitti!");
-                nextLevelOrFinish();
+                gameOver("Süreniz bittiği için elendiniz!");
             }
             timeLeft--;
         }, 1000);
@@ -206,57 +219,52 @@
     function renderHexGrid() {
         const container = document.getElementById("hexGridContainer");
         container.innerHTML = "";
-        const data = levelsData[currentLevel - 1];
 
-        // İşaretler kaldırıldı, fotoğraf düzenine benzer saf altıgen yapı oluşturuldu
         container.innerHTML = `
             <div class="hex-row">
-                <div class="hex clue">H:${data.targetSum}</div>
-                <div class="hex" onclick="playSound(); changeHex(0)" id="h0">${currentGridValues[0]}</div>
-                <div class="hex" onclick="playSound(); changeHex(1)" id="h1">${currentGridValues[1]}</div>
+                <div class="hex fixed">2</div>
+                <div class="hex" onclick="playSound(); changeHex(0)" id="h0">${gridValues[0]}</div>
+                <div class="hex" onclick="playSound(); changeHex(1)" id="h1">${gridValues[1]}</div>
             </div>
             <div class="hex-row" style="margin-left: 25px;">
                 <div class="hex fixed">5</div>
-                <div class="hex" onclick="playSound(); changeHex(2)" id="h2">${currentGridValues[2]}</div>
-                <div class="hex" onclick="playSound(); changeHex(3)" id="h3">${currentGridValues[3]}</div>
-                <div class="hex clue">Hedef</div>
+                <div class="hex" onclick="playSound(); changeHex(2)" id="h2">${gridValues[2]}</div>
+                <div class="hex" onclick="playSound(); changeHex(3)" id="h3">${gridValues[3]}</div>
+                <div class="hex fixed">2</div>
             </div>
             <div class="hex-row">
                 <div class="hex fixed">4</div>
-                <div class="hex" onclick="playSound(); changeHex(4)" id="h4">${currentGridValues[4]}</div>
+                <div class="hex" onclick="playSound(); changeHex(4)" id="h4">${gridValues[4]}</div>
                 <div class="hex fixed">6</div>
             </div>
         `;
-        checkLiveSum();
     }
 
     function changeHex(index) {
-        currentGridValues[index] = (currentGridValues[index] % 3) + 1;
-        document.getElementById(`h${index}`).innerText = currentGridValues[index];
-        checkLiveSum(); // Anlık olarak toplamı kontrol edip yeşil çerçeve ver
-    }
-
-    function checkLiveSum() {
-        // Örnek bir satır toplamı hedefe ulaştığında yeşil çerçeve kaplaması uygula
-        let rowSum = currentGridValues[0] + currentGridValues[1];
-        const h0 = document.getElementById("h0");
-        const h1 = document.getElementById("h1");
-        
-        if(rowSum === 4) { // Örnek tetiklenme koşulu
-            if(h0) h0.classList.add("solved");
-            if(h1) h1.classList.add("solved");
-        } else {
-            if(h0) h0.classList.remove("solved");
-            if(h1) h1.classList.remove("solved");
-        }
+        gridValues[index] = (gridValues[index] % 3) + 1;
+        document.getElementById(`h${index}`).innerText = gridValues[index];
     }
 
     function checkPuzzle() {
         clearInterval(timerInterval);
-        score += 10;
+        const data = levelsData[currentLevel - 1];
+        let totalSum = 2 + gridValues[0] + gridValues[1];
+
+        if(totalSum === data.target) {
+            // Sadece bulmaca geçiş hakkı verir, puan eklenmez (Puanlar sadece doğru sorulardan gelir)
+            document.getElementById("screen-game").classList.add("hidden");
+            document.getElementById("screen-question").classList.remove("hidden");
+            loadQuestion();
+        } else {
+            gameOver(`Bulmaca yanlış çözüldü! Üst satır toplamı ${data.target} olmalıydı (Senin yaptığın: ${totalSum}). Elendiniz!`);
+        }
+    }
+
+    function gameOver(reason) {
         document.getElementById("screen-game").classList.add("hidden");
-        document.getElementById("screen-question").classList.remove("hidden");
-        loadQuestion();
+        document.getElementById("screen-question").classList.add("hidden");
+        document.getElementById("failReason").innerText = reason;
+        document.getElementById("screen-gameover").classList.remove("hidden");
     }
 
     function loadQuestion() {
@@ -275,10 +283,10 @@
 
     function checkAnswer(selected, correct) {
         if(selected === correct) {
-            score += 5;
+            score += 5; // Sadece doğru cevapta +5 puan eklenir (Max 15)
             alert("Tebrikler, doğru cevap! +5 Puan kazandın.");
         } else {
-            alert("Yanlış cevap!");
+            alert("Yanlış cevap! Puan alamadın.");
         }
         nextLevelOrFinish();
     }
@@ -298,15 +306,15 @@
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v3") || "[]");
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v6") || "[]");
         lb.push({ name: playerName, score: score });
         lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("tubitak_lb_v3", JSON.stringify(lb));
+        localStorage.setItem("tubitak_lb_v6", JSON.stringify(lb));
 
         const tbody = document.getElementById("leaderboardBody");
         tbody.innerHTML = "";
         lb.forEach((item, index) => {
-            tbody.innerHTML += `<tr><td>${index+1}</td><td>${item.name}</td><td>${item.score} Puan</td></tr>`;
+            tbody.innerHTML += `<tr><td>${index+1}</td><td>${item.name}</td><td>${item.score} / 15 Puan</td></tr>`;
         });
     }
 </script>
