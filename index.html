@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TÜBİTAK - Konya Hexologic Bulmaca Macerası</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 700px; width: 100%; background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; }
+        h1 { color: #38bdf8; margin-bottom: 5px; }
+        .timer { font-size: 1.5rem; color: #facc15; margin: 15px 0; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(3, 80px); gap: 10px; justify-content: center; margin: 20px 0; }
+        .cell { width: 80px; height: 80px; background: #334155; border: 2px solid #475569; border-radius: 12px; font-size: 1.8rem; font-weight: bold; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .cell:hover { background: #475569; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 12px 24px; font-size: 1rem; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.2s; }
+        .btn:hover { background: #2563eb; }
+        .hidden { display: none; }
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .option-btn { background: #334155; color: white; border: 1px solid #64748b; padding: 10px; border-radius: 8px; cursor: pointer; text-align: left; }
+        .option-btn:hover { background: #475569; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #334155; text-align: center; }
+        th { color: #38bdf8; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <h1>Konya Kültür & Hexologic</h1>
+    <p>TÜBİTAK Proje Modülü</p>
+
+    <!-- Giriş Ekranı -->
+    <div id="screen-start">
+        <p>Oyunu oynamak ve puanları toplamak için adını gir:</p>
+        <input type="text" id="playerName" placeholder="Adınız Soyadınız" style="padding: 10px; font-size: 1rem; border-radius: 8px; border: 1px solid #64748b; width: 80%; margin-bottom: 15px;"><br>
+        <button class="btn" onclick="startGame()">Maceraya Başla</button>
+    </div>
+
+    <!-- Oyun Ekranı -->
+    <div id="screen-game" class="hidden">
+        <h3 id="levelTitle">1. Bölüm</h3>
+        <div class="timer" id="timer">Kalan Süre: 03:00</div>
+        <p>Hedef: Hücrelere tıklayarak değerleri ayarla ve satır/sütun toplamlarını eşitle!</p>
+        <div class="grid" id="puzzleGrid"></div>
+        <button class="btn" onclick="checkPuzzle()">Bölümü Tamamla</button>
+    </div>
+
+    <!-- Soru Ekranı -->
+    <div id="screen-question" class="hidden">
+        <h3 style="color: #facc15;">Genel Kültür Sorusu (+5 Puan)</h3>
+        <p id="questionText" style="font-size: 1.1rem; margin: 20px 0;"></p>
+        <div class="options" id="optionsContainer"></div>
+    </div>
+
+    <!-- Liderlik Tablosu -->
+    <div id="screen-leaderboard" class="hidden">
+        <h2>🏆 Liderlik Tablosu</h2>
+        <table>
+            <thead>
+                <tr><th>Sıra</th><th>İsim</th><th>Puan</th></tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+        </table>
+        <button class="btn" onclick="location.reload()">Yeniden Başla</button>
+    </div>
+</div>
+
+<script>
+    let currentLevel = 1;
+    let score = 0;
+    let timerInterval;
+    let timeLeft = 180; // 1. Bölüm 3 dakika
+    let playerName = "";
+    let gridValues = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    const questions = [
+        {
+            q: "Konya'nın tarihi dokusuyla ünlü, Rum ve Türk kültürünün izlerini taşıyan tarihi mahallesi / sit alanı hangisidir?",
+            options: ["A) Sille", "B) İvriz", "C) Çatalhöyük", "D) Lystra"],
+            answer: 0
+        },
+        {
+            q: "Dünyanın en eski yerleşim yerlerinden biri olan ve neolitik döneme ev sahipliği yapan Konya'daki UNESCO miras alanı neresidir?",
+            options: ["A) Alaeddin Tepesi", "B) Çatalhöyük", "C) Karatay Medresesi", "D) Aziziye Camii"],
+            answer: 1
+        },
+        {
+            q: "Selçuklu Devleti'ne başkentlik yapmış Konya'da, Alaeddin Tepesi üzerinde bulunan tarihi caminin adı nedir?",
+            options: ["A) Selimiye Camii", "B) Aziziye Camii", "C) Alaeddin Camii", "D) İplikçi Camii"],
+            answer: 2
+        }
+    ];
+
+    function startGame() {
+        const nameInput = document.getElementById("playerName").value.trim();
+        if(!nameInput) { alert("Lütfen adınızı girin!"); return; }
+        playerName = nameInput;
+        document.getElementById("screen-start").classList.add("hidden");
+        document.getElementById("screen-game").classList.remove("hidden");
+        loadLevel();
+    }
+
+    function loadLevel() {
+        if(currentLevel === 1) { timeLeft = 180; document.getElementById("levelTitle").innerText = "1. Bölüm: Sille Macerası (3 Dk)"; }
+        else if(currentLevel === 2) { timeLeft = 300; document.getElementById("levelTitle").innerText = "2. Bölüm: Çatalhöyük (5 Dk)"; }
+        else if(currentLevel === 3) { timeLeft = 300; document.getElementById("levelTitle").innerText = "3. Bölüm: Selçuklu Tarihi (5 Dk)"; }
+        
+        startTimer();
+        renderGrid();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            document.getElementById("timer").innerText = `Kalan Süre: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert("Süreniz bitti!");
+                nextLevelOrFinish();
+            }
+            timeLeft--;
+        }, 1000);
+    }
+
+    function renderGrid() {
+        gridValues = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        const gridEl = document.getElementById("puzzleGrid");
+        gridEl.innerHTML = "";
+        gridValues.forEach((val, idx) => {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.innerText = val;
+            cell.onclick = () => {
+                gridValues[idx] = (gridValues[idx] + 1) % 4; // 0, 1, 2, 3 döngüsü
+                cell.innerText = gridValues[idx];
+            };
+            gridEl.appendChild(cell);
+        });
+    }
+
+    function checkPuzzle() {
+        clearInterval(timerInterval);
+        score += 10; // Bulmaca puanı
+        document.getElementById("screen-game").classList.add("hidden");
+        document.getElementById("screen-question").classList.remove("hidden");
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const qData = questions[currentLevel - 1];
+        document.getElementById("questionText").innerText = qData.q;
+        const optContainer = document.getElementById("optionsContainer");
+        optContainer.innerHTML = "";
+        qData.options.forEach((opt, idx) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(idx, qData.answer);
+            optContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct) {
+        if(selected === correct) {
+            score += 5; // Soru puanı
+            alert("Doğru cevap! +5 Puan kazandın.");
+        } else {
+            alert("Yanlış cevap!");
+        }
+        nextLevelOrFinish();
+    }
+
+    function nextLevelOrFinish() {
+        currentLevel++;
+        if(currentLevel <= 3) {
+            document.getElementById("screen-question").classList.add("hidden");
+            document.getElementById("screen-game").classList.remove("hidden");
+            loadLevel();
+        } else {
+            showLeaderboard();
+        }
+    }
+
+    function showLeaderboard() {
+        document.getElementById("screen-question").classList.add("hidden");
+        document.getElementById("screen-leaderboard").classList.remove("hidden");
+        
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb") || "[]");
+        lb.push({ name: playerName, score: score });
+        lb.sort((a,b) => b.score - a.score);
+        localStorage.setItem("tubitak_lb", JSON.stringify(lb));
+
+        const tbody = document.getElementById("leaderboardBody");
+        tbody.innerHTML = "";
+        lb.forEach((item, index) => {
+            tbody.innerHTML += `<tr><td>${index+1}</td><td>${item.name}</td><td>${item.score} Puan</td></tr>`;
+        });
+    }
+</script>
+
+</body>
+</html>
