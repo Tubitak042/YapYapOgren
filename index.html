@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TÜBİTAK - Konya Hexologic Macerası (SÜRÜM V8)</title>
+    <title>TÜBİTAK - Konya Hexologic Macerası (SÜRÜM V9)</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -26,7 +26,7 @@
         .container { max-width: 800px; width: 100%; background: rgba(30, 41, 59, 0.88); backdrop-filter: blur(12px); padding: 25px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); text-align: center; border: 1px solid rgba(255,255,255,0.12); }
         
         .version-badge {
-            background: #ec4899;
+            background: #8b5cf6;
             color: white;
             font-size: 0.9rem;
             font-weight: bold;
@@ -39,12 +39,11 @@
         h1 { color: #f43f5e; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .timer { font-size: 1.4rem; color: #facc15; margin: 12px 0; font-weight: bold; }
         
-        /* Hexagon Izgara Düzeni */
-        .hex-board { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 25px 0; position: relative; }
-        .hex-row { display: flex; gap: 8px; justify-content: center; }
+        .hex-board { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 25px 0; position: relative; }
+        .hex-row { display: flex; gap: 8px; justify-content: center; align-items: center; }
         
         .hex { 
-            width: 62px; height: 72px; 
+            width: 65px; height: 75px; 
             background: #fbcfe8; 
             position: relative; 
             display: flex; align-items: center; justify-content: center; 
@@ -57,13 +56,12 @@
         }
         .hex:hover { background: #f472b6; color: white; transform: scale(1.08); z-index: 2; }
         
-        /* Kenar İpucu Hücreleri (Pembe / Mavi Hedefler) */
-        .hex.clue-top { background: #e11d48; color: white; cursor: default; font-size: 1.1rem; }
-        .hex.clue-left { background: #0284c7; color: white; cursor: default; font-size: 1.1rem; }
-        .hex.clue-right { background: #d97706; color: white; cursor: default; font-size: 1.1rem; }
+        /* Net Karşılık / Kenar Hedef Hücreleri (Oklar kaldırıldı, direkt değerler yerleştirildi) */
+        .hex.clue-target { background: #0284c7; color: white; font-size: 1.15rem; cursor: default; box-shadow: 0 0 10px rgba(2,132,199,0.5); }
+        .hex.clue-target-alt { background: #e11d48; color: white; font-size: 1.15rem; cursor: default; box-shadow: 0 0 10px rgba(225,29,72,0.5); }
         .hex.empty { visibility: hidden; }
 
-        /* Doğru Doğrultu Yeşil Parıltı */
+        /* Doğru Doğrultu Yeşil Parıltı Kaplaması */
         .hex.solved { 
             background: #22c55e !important; 
             color: #052e16 !important;
@@ -87,7 +85,7 @@
 <body>
 
 <div class="container" id="app">
-    <div class="version-badge">SÜRÜM V8 - Tübitak Kırlangıçları (Gelişmiş Çapraz Hex)</div>
+    <div class="version-badge">SÜRÜM V9 - Tübitak Kırlangıçları (Net Hedef Hizalama)</div>
     <h1>KONYA HEXOLOGİC</h1>
     <p>TÜBİTAK Proje Bulmaca İstasyonu</p>
 
@@ -103,9 +101,9 @@
     <div id="screen-game" class="hidden">
         <h3 id="levelTitle" style="color: #38bdf8;">1. Bölüm</h3>
         <div class="timer" id="timer">Kalan Süre: 03:00</div>
-        <p style="font-size: 0.92rem; color: #cbd5e1;">Hücrelere tıklayıp (1-3) sayıları ver. Kenarlardaki çapraz ve dikey hedef toplamları yakala!</p>
+        <p style="font-size: 0.92rem; color: #cbd5e1;">Hücrelere tıklayıp (1-3) sayılarını ver. Hedef sayıları, ilgili satır veya çaprazın tam karşısında bulabilirsin!</p>
         
-        <!-- Çapraz & Dikey İpuçlu Özel Şekilli Izgara -->
+        <!-- Net Karşılıklı Hedef Yapısı -->
         <div class="hex-board" id="hexBoard"></div>
         
         <button class="btn" onclick="playSound(); checkPuzzle();">Bölümü Tamamla</button>
@@ -162,7 +160,6 @@
     let timeLeft = 180;
     let playerName = "";
     
-    // 7 Adet Etkileşimli Hücre Değerleri (1, 2, 3)
     let grid = [1, 1, 1, 1, 1, 1, 1];
 
     const levelsData = [
@@ -248,15 +245,15 @@
         board.innerHTML = "";
         const data = levelsData[currentLevel - 1];
 
-        // Fotoğraftaki gibi özel, çapraz ipuçlu ve organil dizilimli altıgen haritası
+        // Oklar kaldırıldı, hedef sayılar doğrudan satırların ve çaprazların tam karşısına yerleştirildi
         board.innerHTML = `
             <div class="hex-row">
                 <div class="hex empty"></div>
-                <div class="hex clue-top">↘ ${data.targets.diag1}</div>
-                <div class="hex clue-top">↙ ${data.targets.diag2}</div>
+                <div class="hex clue-target">${data.targets.diag1}</div>
+                <div class="hex clue-target-alt">${data.targets.diag2}</div>
             </div>
             <div class="hex-row">
-                <div class="hex clue-left">↓ ${data.targets.col1}</div>
+                <div class="hex clue-target">${data.targets.col1}</div>
                 <div class="hex" onclick="changeCell(0)" id="c0">${grid[0]}</div>
                 <div class="hex" onclick="changeCell(1)" id="c1">${grid[1]}</div>
             </div>
@@ -275,7 +272,7 @@
 
     function changeCell(idx) {
         playSound();
-        grid[idx] = (grid[idx] % 3) + 1; // 1, 2, 3 döngüsü
+        grid[idx] = (grid[idx] % 3) + 1;
         document.getElementById(`c${idx}`).innerText = grid[idx];
         checkLiveLines();
     }
@@ -283,15 +280,14 @@
     function checkLiveLines() {
         const data = levelsData[currentLevel - 1];
         
-        let sumDiag1 = grid[0] + grid[2] + grid[4]; // Çapraz 1
-        let sumDiag2 = grid[1] + grid[2] + grid[5]; // Çapraz 2
-        let sumCol1  = grid[0] + grid[3] + grid[5]; // Dikey / Satır
+        let sumDiag1 = grid[0] + grid[2] + grid[4];
+        let sumDiag2 = grid[1] + grid[2] + grid[5];
+        let sumCol1  = grid[0] + grid[3] + grid[5];
 
         const c0 = document.getElementById("c0");
         const c2 = document.getElementById("c2");
         const c4 = document.getElementById("c4");
 
-        // Çapraz 1 doğru ise yeşil yak
         if(sumDiag1 === data.targets.diag1) {
             if(c0) c0.classList.add("solved");
             if(c2) c2.classList.add("solved");
@@ -316,7 +312,7 @@
             document.getElementById("screen-question").classList.remove("hidden");
             loadQuestion();
         } else {
-            gameOver(`Bulmaca yanlış çözüldü! Çapraz ve dikey tüm hedefleri tutturmalısın. Elendiniz!`);
+            gameOver(`Bulmaca yanlış çözüldü! Çapraz ve dikey tüm hedefleri doğru tutturmalısın. Elendiniz!`);
         }
     }
 
@@ -366,10 +362,10 @@
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v8") || "[]");
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v9") || "[]");
         lb.push({ name: playerName, score: score });
         lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("tubitak_lb_v8", JSON.stringify(lb));
+        localStorage.setItem("tubitak_lb_v9", JSON.stringify(lb));
 
         const tbody = document.getElementById("leaderboardBody");
         tbody.innerHTML = "";
