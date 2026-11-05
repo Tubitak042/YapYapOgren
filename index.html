@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TÜBİTAK - Konya Hexologic Macerası (SÜRÜM V9)</title>
+    <title>TÜBİTAK - Konya Hexologic Macerası (SÜRÜM V10)</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -26,8 +26,8 @@
         .container { max-width: 800px; width: 100%; background: rgba(30, 41, 59, 0.88); backdrop-filter: blur(12px); padding: 25px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); text-align: center; border: 1px solid rgba(255,255,255,0.12); }
         
         .version-badge {
-            background: #8b5cf6;
-            color: white;
+            background: #10b981;
+            color: #064e3b;
             font-size: 0.9rem;
             font-weight: bold;
             padding: 5px 14px;
@@ -39,34 +39,33 @@
         h1 { color: #f43f5e; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .timer { font-size: 1.4rem; color: #facc15; margin: 12px 0; font-weight: bold; }
         
-        .hex-board { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 25px 0; position: relative; }
-        .hex-row { display: flex; gap: 8px; justify-content: center; align-items: center; }
+        .hex-board { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 25px 0; position: relative; }
+        .hex-row { display: flex; gap: 10px; justify-content: center; align-items: center; }
         
         .hex { 
-            width: 65px; height: 75px; 
-            background: #fbcfe8; 
+            width: 70px; height: 80px; 
+            background: #fde047; 
             position: relative; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 1.5rem; font-weight: 800; color: #831843; 
+            font-size: 1.6rem; font-weight: 800; color: #1e293b; 
             cursor: pointer; 
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
             transition: all 0.25s ease;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             user-select: none;
         }
-        .hex:hover { background: #f472b6; color: white; transform: scale(1.08); z-index: 2; }
+        .hex:hover { background: #facc15; transform: scale(1.08); z-index: 2; }
         
-        /* Net Karşılık / Kenar Hedef Hücreleri (Oklar kaldırıldı, direkt değerler yerleştirildi) */
-        .hex.clue-target { background: #0284c7; color: white; font-size: 1.15rem; cursor: default; box-shadow: 0 0 10px rgba(2,132,199,0.5); }
-        .hex.clue-target-alt { background: #e11d48; color: white; font-size: 1.15rem; cursor: default; box-shadow: 0 0 10px rgba(225,29,72,0.5); }
+        /* Çizimindeki gibi hatların uçundaki hedef kutuları */
+        .hex.target-tip { background: #0284c7; color: white; font-size: 1.15rem; cursor: default; box-shadow: 0 0 12px rgba(2,132,199,0.6); }
+        .hex.target-tip-alt { background: #f97316; color: white; font-size: 1.15rem; cursor: default; box-shadow: 0 0 12px rgba(249,115,22,0.6); }
         .hex.empty { visibility: hidden; }
 
-        /* Doğru Doğrultu Yeşil Parıltı Kaplaması */
-        .hex.solved { 
+        /* Doğru hat yeşil parıltısı */
+        .hex.solved-line { 
             background: #22c55e !important; 
             color: #052e16 !important;
             box-shadow: 0 0 18px #22c55e;
-            transform: scale(1.03);
         }
 
         .btn { background: #f43f5e; color: white; border: none; padding: 12px 30px; font-size: 1.1rem; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.2s; box-shadow: 0 4px 12px rgba(244,63,94,0.4); }
@@ -85,7 +84,7 @@
 <body>
 
 <div class="container" id="app">
-    <div class="version-badge">SÜRÜM V9 - Tübitak Kırlangıçları (Net Hedef Hizalama)</div>
+    <div class="version-badge">SÜRÜM V10 - Tübitak Kırlangıçları (Net Hat Toplamları)</div>
     <h1>KONYA HEXOLOGİC</h1>
     <p>TÜBİTAK Proje Bulmaca İstasyonu</p>
 
@@ -101,9 +100,9 @@
     <div id="screen-game" class="hidden">
         <h3 id="levelTitle" style="color: #38bdf8;">1. Bölüm</h3>
         <div class="timer" id="timer">Kalan Süre: 03:00</div>
-        <p style="font-size: 0.92rem; color: #cbd5e1;">Hücrelere tıklayıp (1-3) sayılarını ver. Hedef sayıları, ilgili satır veya çaprazın tam karşısında bulabilirsin!</p>
+        <p style="font-size: 0.92rem; color: #cbd5e1;">Hücrelere tıklayarak (1-3) sayıları yerleştir. Hatların uçlarındaki hedef sayılara ulaşınca hatlar yeşil yanar!</p>
         
-        <!-- Net Karşılıklı Hedef Yapısı -->
+        <!-- Hat Mantığına Göre Düzenlenmiş Izgara -->
         <div class="hex-board" id="hexBoard"></div>
         
         <button class="btn" onclick="playSound(); checkPuzzle();">Bölümü Tamamla</button>
@@ -160,17 +159,14 @@
     let timeLeft = 180;
     let playerName = "";
     
-    let grid = [1, 1, 1, 1, 1, 1, 1];
+    // Her bölüm için farklı 6'şar hücreli bulmaca yapıları
+    let grid = [1, 1, 1, 1, 1, 1];
 
     const levelsData = [
         {
             title: "1. Bölüm: Sille Macerası (3 Dk)",
             time: 180,
-            targets: {
-                diag1: 6, // Hücre 0 + 1 + 2
-                diag2: 5, // Hücre 2 + 4 + 6
-                col1: 4   // Hücre 1 + 3 + 5
-            },
+            targets: { line1: 6, line2: 5 }, // 1. ve 2. hattın hedef toplamları
             question: {
                 q: "Konya'nın tarihi dokusuyla ünlü, Rum ve Türk kültürünün izlerini taşıyan tarihi mahallesi / sit alanı hangisidir?",
                 options: ["A) Sille", "B) İvriz", "C) Çatalhöyük", "D) Lystra"],
@@ -180,11 +176,7 @@
         {
             title: "2. Bölüm: Çatalhöyük Gizemi (5 Dk)",
             time: 300,
-            targets: {
-                diag1: 7,
-                diag2: 6,
-                col1: 5
-            },
+            targets: { line1: 7, line2: 6 },
             question: {
                 q: "Dünyanın en eski yerleşim yerlerinden biri olan ve neolitik döneme ev sahipliği yapan Konya'daki UNESCO miras alanı neresidir?",
                 options: ["A) Alaeddin Tepesi", "B) Çatalhöyük", "C) Karatay Medresesi", "D) Aziziye Camii"],
@@ -194,11 +186,7 @@
         {
             title: "3. Bölüm: Selçuklu Başkenti (5 Dk)",
             time: 300,
-            targets: {
-                diag1: 8,
-                diag2: 7,
-                col1: 6
-            },
+            targets: { line1: 8, line2: 7 },
             question: {
                 q: "Selçuklu Devleti'ne başkentlik yapmış Konya'da, Alaeddin Tepesi üzerinde bulunan tarihi caminin adı nedir?",
                 options: ["A) Selimiye Camii", "B) Aziziye Camii", "C) Alaeddin Camii", "D) İplikçi Camii"],
@@ -220,7 +208,7 @@
         const data = levelsData[currentLevel - 1];
         timeLeft = data.time;
         document.getElementById("levelTitle").innerText = data.title;
-        grid = [1, 1, 1, 1, 1, 1, 1];
+        grid = [1, 1, 1, 1, 1, 1]; // Her bölümde sıfırlanır
         
         startTimer();
         renderHexBoard();
@@ -245,26 +233,19 @@
         board.innerHTML = "";
         const data = levelsData[currentLevel - 1];
 
-        // Oklar kaldırıldı, hedef sayılar doğrudan satırların ve çaprazların tam karşısına yerleştirildi
+        // Çizimindeki gibi hatlar ve uçlarında net hedef kutuları
         board.innerHTML = `
             <div class="hex-row">
-                <div class="hex empty"></div>
-                <div class="hex clue-target">${data.targets.diag1}</div>
-                <div class="hex clue-target-alt">${data.targets.diag2}</div>
-            </div>
-            <div class="hex-row">
-                <div class="hex clue-target">${data.targets.col1}</div>
                 <div class="hex" onclick="changeCell(0)" id="c0">${grid[0]}</div>
                 <div class="hex" onclick="changeCell(1)" id="c1">${grid[1]}</div>
-            </div>
-            <div class="hex-row" style="margin-left: 35px;">
                 <div class="hex" onclick="changeCell(2)" id="c2">${grid[2]}</div>
-                <div class="hex" onclick="changeCell(3)" id="c3">${grid[3]}</div>
-                <div class="hex" onclick="changeCell(4)" id="c4">${grid[4]}</div>
+                <div class="hex target-tip">${data.targets.line1}</div>
             </div>
             <div class="hex-row">
+                <div class="hex" onclick="changeCell(3)" id="c3">${grid[3]}</div>
+                <div class="hex" onclick="changeCell(4)" id="c4">${grid[4]}</div>
                 <div class="hex" onclick="changeCell(5)" id="c5">${grid[5]}</div>
-                <div class="hex" onclick="changeCell(6)" id="c6">${grid[6]}</div>
+                <div class="hex target-tip-alt">${data.targets.line2}</div>
             </div>
         `;
         checkLiveLines();
@@ -272,7 +253,7 @@
 
     function changeCell(idx) {
         playSound();
-        grid[idx] = (grid[idx] % 3) + 1;
+        grid[idx] = (grid[idx] % 3) + 1; // 1, 2, 3 arasında değişir
         document.getElementById(`c${idx}`).innerText = grid[idx];
         checkLiveLines();
     }
@@ -280,22 +261,36 @@
     function checkLiveLines() {
         const data = levelsData[currentLevel - 1];
         
-        let sumDiag1 = grid[0] + grid[2] + grid[4];
-        let sumDiag2 = grid[1] + grid[2] + grid[5];
-        let sumCol1  = grid[0] + grid[3] + grid[5];
+        // 1. Hat: Hücre 0, 1, 2 toplamı
+        let sum1 = grid[0] + grid[1] + grid[2];
+        // 2. Hat: Hücre 3, 4, 5 toplamı
+        let sum2 = grid[3] + grid[4] + grid[5];
 
         const c0 = document.getElementById("c0");
+        const c1 = document.getElementById("c1");
         const c2 = document.getElementById("c2");
+        const c3 = document.getElementById("c3");
         const c4 = document.getElementById("c4");
+        const c5 = document.getElementById("c5");
 
-        if(sumDiag1 === data.targets.diag1) {
-            if(c0) c0.classList.add("solved");
-            if(c2) c2.classList.add("solved");
-            if(c4) c4.classList.add("solved");
+        if(sum1 === data.targets.line1) {
+            c0.classList.add("solved-line");
+            c1.classList.add("solved-line");
+            c2.classList.add("solved-line");
         } else {
-            if(c0) c0.classList.remove("solved");
-            if(c2) c2.classList.remove("solved");
-            if(c4) c4.classList.remove("solved");
+            c0.classList.remove("solved-line");
+            c1.classList.remove("solved-line");
+            c2.classList.remove("solved-line");
+        }
+
+        if(sum2 === data.targets.line2) {
+            c3.classList.add("solved-line");
+            c4.classList.add("solved-line");
+            c5.classList.add("solved-line");
+        } else {
+            c3.classList.remove("solved-line");
+            c4.classList.remove("solved-line");
+            c5.classList.remove("solved-line");
         }
     }
 
@@ -303,16 +298,15 @@
         clearInterval(timerInterval);
         const data = levelsData[currentLevel - 1];
         
-        let sumDiag1 = grid[0] + grid[2] + grid[4];
-        let sumDiag2 = grid[1] + grid[2] + grid[5];
-        let sumCol1  = grid[0] + grid[3] + grid[5];
+        let sum1 = grid[0] + grid[1] + grid[2];
+        let sum2 = grid[3] + grid[4] + grid[5];
 
-        if(sumDiag1 === data.targets.diag1 && sumDiag2 === data.targets.diag2 && sumCol1 === data.targets.col1) {
+        if(sum1 === data.targets.line1 && sum2 === data.targets.line2) {
             document.getElementById("screen-game").classList.add("hidden");
             document.getElementById("screen-question").classList.remove("hidden");
             loadQuestion();
         } else {
-            gameOver(`Bulmaca yanlış çözüldü! Çapraz ve dikey tüm hedefleri doğru tutturmalısın. Elendiniz!`);
+            gameOver(`Bulmaca yanlış çözüldü! Hat toplamları hedeflere uymalı (1. Hat: ${sum1}/${data.targets.line1}, 2. Hat: ${sum2}/${data.targets.line2}). Elendiniz!`);
         }
     }
 
@@ -362,10 +356,10 @@
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v9") || "[]");
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v10") || "[]");
         lb.push({ name: playerName, score: score });
         lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("tubitak_lb_v9", JSON.stringify(lb));
+        localStorage.setItem("tubitak_lb_v10", JSON.stringify(lb));
 
         const tbody = document.getElementById("leaderboardBody");
         tbody.innerHTML = "";
