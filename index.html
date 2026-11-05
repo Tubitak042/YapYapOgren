@@ -6,17 +6,19 @@
     <title>TÜBİTAK - Konya Hexologic Bulmaca Macerası</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 700px; width: 100%; background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; }
+        .container { max-width: 750px; width: 100%; background: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; }
         h1 { color: #38bdf8; margin-bottom: 5px; }
-        .timer { font-size: 1.5rem; color: #facc15; margin: 15px 0; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: repeat(3, 80px); gap: 10px; justify-content: center; margin: 20px 0; }
-        .cell { width: 80px; height: 80px; background: #334155; border: 2px solid #475569; border-radius: 12px; font-size: 1.8rem; font-weight: bold; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .cell:hover { background: #475569; }
+        .timer { font-size: 1.4rem; color: #facc15; margin: 15px 0; font-weight: bold; }
+        .puzzle-box { background: #334155; padding: 20px; border-radius: 12px; margin: 20px 0; display: inline-block; }
+        .grid { display: grid; grid-template-columns: repeat(3, 70px); gap: 10px; justify-content: center; margin: 15px 0; }
+        .cell { width: 70px; height: 70px; background: #475569; border: 2px solid #64748b; border-radius: 50%; font-size: 1.5rem; font-weight: bold; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .cell:hover { background: #3b82f6; }
+        .target { font-size: 0.9rem; color: #38bdf8; margin: 5px; }
         .btn { background: #3b82f6; color: white; border: none; padding: 12px 24px; font-size: 1rem; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.2s; }
         .btn:hover { background: #2563eb; }
         .hidden { display: none; }
         .options { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .option-btn { background: #334155; color: white; border: 1px solid #64748b; padding: 10px; border-radius: 8px; cursor: pointer; text-align: left; }
+        .option-btn { background: #334155; color: white; border: 1px solid #64748b; padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; font-size: 1rem; transition: 0.2s; }
         .option-btn:hover { background: #475569; }
         table { width: 100%; margin-top: 20px; border-collapse: collapse; }
         th, td { padding: 10px; border-bottom: 1px solid #334155; text-align: center; }
@@ -31,37 +33,44 @@
 
     <!-- Giriş Ekranı -->
     <div id="screen-start">
-        <p>Oyunu oynamak ve puanları toplamak için adını gir:</p>
-        <input type="text" id="playerName" placeholder="Adınız Soyadınız" style="padding: 10px; font-size: 1rem; border-radius: 8px; border: 1px solid #64748b; width: 80%; margin-bottom: 15px;"><br>
-        <button class="btn" onclick="startGame()">Maceraya Başla</button>
+        <p>Oyuna başlamak ve sıralamaya girmek için adını gir:</p>
+        <input type="text" id="playerName" placeholder="Adınız Soyadınız" style="padding: 12px; font-size: 1rem; border-radius: 8px; border: 1px solid #64748b; width: 80%; max-width: 300px; margin-bottom: 15px;"><br>
+        <button class="btn" onclick="startGame()">Macerayı Başlat</button>
     </div>
 
     <!-- Oyun Ekranı -->
     <div id="screen-game" class="hidden">
         <h3 id="levelTitle">1. Bölüm</h3>
         <div class="timer" id="timer">Kalan Süre: 03:00</div>
-        <p>Hedef: Hücrelere tıklayarak değerleri ayarla ve satır/sütun toplamlarını eşitle!</p>
-        <div class="grid" id="puzzleGrid"></div>
+        <p style="font-size: 0.95s; color: #cbd5e1;">Hücrelere tıklayarak değerleri değiştir (1-3 arası). Satır ve sütunların toplamını hedef sayılara ulaştır!</p>
+        
+        <div class="puzzle-box">
+            <div id="targetsTop" class="target"></div>
+            <div class="grid" id="puzzleGrid"></div>
+            <div id="targetsBottom" class="target"></div>
+        </div><br>
+        
         <button class="btn" onclick="checkPuzzle()">Bölümü Tamamla</button>
     </div>
 
     <!-- Soru Ekranı -->
     <div id="screen-question" class="hidden">
-        <h3 style="color: #facc15;">Genel Kültür Sorusu (+5 Puan)</h3>
-        <p id="questionText" style="font-size: 1.1rem; margin: 20px 0;"></p>
+        <h3 style="color: #facc15;">Konya Kültür & Tarih Sorusu (+5 Puan)</h3>
+        <p id="questionText" style="font-size: 1.1rem; margin: 20px 0; line-height: 1.5;"></p>
         <div class="options" id="optionsContainer"></div>
     </div>
 
     <!-- Liderlik Tablosu -->
     <div id="screen-leaderboard" class="hidden">
-        <h2>🏆 Liderlik Tablosu</h2>
+        <h2>🏆 TÜBİTAK Liderlik Tablosu</h2>
         <table>
             <thead>
-                <tr><th>Sıra</th><th>İsim</th><th>Puan</th></tr>
+                <tr><th>Sıra</th><th>İsim</th><th>Toplam Puan</th></tr>
             </thead>
             <tbody id="leaderboardBody"></tbody>
         </table>
-        <button class="btn" onclick="location.reload()">Yeniden Başla</button>
+        <br>
+        <button class="btn" onclick="location.reload()">Yeniden Oyna</button>
     </div>
 </div>
 
@@ -69,25 +78,41 @@
     let currentLevel = 1;
     let score = 0;
     let timerInterval;
-    let timeLeft = 180; // 1. Bölüm 3 dakika
+    let timeLeft = 180;
     let playerName = "";
-    let gridValues = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-    const questions = [
+    let gridValues = [1, 1, 1, 1, 1, 1, 1, 1, 1];
+    
+    // Her bölüm için hedef toplamlar ve sorular
+    const levelsData = [
         {
-            q: "Konya'nın tarihi dokusuyla ünlü, Rum ve Türk kültürünün izlerini taşıyan tarihi mahallesi / sit alanı hangisidir?",
-            options: ["A) Sille", "B) İvriz", "C) Çatalhöyük", "D) Lystra"],
-            answer: 0
+            title: "1. Bölüm: Sille Macerası (3 Dk)",
+            time: 180,
+            targets: [6, 6, 6], // Satır hedef toplamları
+            question: {
+                q: "Konya'nın tarihi dokusuyla ünlü, Rum ve Türk kültürünün izlerini taşıyan tarihi mahallesi / sit alanı hangisidir?",
+                options: ["A) Sille", "B) İvriz", "C) Çatalhöyük", "D) Lystra"],
+                answer: 0
+            }
         },
         {
-            q: "Dünyanın en eski yerleşim yerlerinden biri olan ve neolitik döneme ev sahipliği yapan Konya'daki UNESCO miras alanı neresidir?",
-            options: ["A) Alaeddin Tepesi", "B) Çatalhöyük", "C) Karatay Medresesi", "D) Aziziye Camii"],
-            answer: 1
+            title: "2. Bölüm: Çatalhöyük Gizemi (5 Dk)",
+            time: 300,
+            targets: [7, 6, 8],
+            question: {
+                q: "Dünyanın en eski yerleşim yerlerinden biri olan ve neolitik döneme ev sahipliği yapan Konya'daki UNESCO miras alanı neresidir?",
+                options: ["A) Alaeddin Tepesi", "B) Çatalhöyük", "C) Karatay Medresesi", "D) Aziziye Camii"],
+                answer: 1
+            }
         },
         {
-            q: "Selçuklu Devleti'ne başkentlik yapmış Konya'da, Alaeddin Tepesi üzerinde bulunan tarihi caminin adı nedir?",
-            options: ["A) Selimiye Camii", "B) Aziziye Camii", "C) Alaeddin Camii", "D) İplikçi Camii"],
-            answer: 2
+            title: "3. Bölüm: Selçuklu Başkenti (5 Dk)",
+            time: 300,
+            targets: [8, 8, 8],
+            question: {
+                q: "Selçuklu Devleti'ne başkentlik yapmış Konya'da, Alaeddin Tepesi üzerinde bulunan tarihi caminin adı nedir?",
+                options: ["A) Selimiye Camii", "B) Aziziye Camii", "C) Alaeddin Camii", "D) İplikçi Camii"],
+                answer: 2
+            }
         }
     ];
 
@@ -101,9 +126,10 @@
     }
 
     function loadLevel() {
-        if(currentLevel === 1) { timeLeft = 180; document.getElementById("levelTitle").innerText = "1. Bölüm: Sille Macerası (3 Dk)"; }
-        else if(currentLevel === 2) { timeLeft = 300; document.getElementById("levelTitle").innerText = "2. Bölüm: Çatalhöyük (5 Dk)"; }
-        else if(currentLevel === 3) { timeLeft = 300; document.getElementById("levelTitle").innerText = "3. Bölüm: Selçuklu Tarihi (5 Dk)"; }
+        const data = levelsData[currentLevel - 1];
+        timeLeft = data.time;
+        document.getElementById("levelTitle").innerText = data.title;
+        document.getElementById("targetsTop").innerText = `Hedef Satır Toplamları: ${data.targets.join(" | ")}`;
         
         startTimer();
         renderGrid();
@@ -125,7 +151,7 @@
     }
 
     function renderGrid() {
-        gridValues = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        gridValues = [1, 1, 1, 1, 1, 1, 1, 1, 1];
         const gridEl = document.getElementById("puzzleGrid");
         gridEl.innerHTML = "";
         gridValues.forEach((val, idx) => {
@@ -133,7 +159,7 @@
             cell.className = "cell";
             cell.innerText = val;
             cell.onclick = () => {
-                gridValues[idx] = (gridValues[idx] + 1) % 4; // 0, 1, 2, 3 döngüsü
+                gridValues[idx] = gridValues[idx] % 3 + 1; // 1, 2, 3 arasında döner
                 cell.innerText = gridValues[idx];
             };
             gridEl.appendChild(cell);
@@ -141,15 +167,25 @@
     }
 
     function checkPuzzle() {
-        clearInterval(timerInterval);
-        score += 10; // Bulmaca puanı
-        document.getElementById("screen-game").classList.add("hidden");
-        document.getElementById("screen-question").classList.remove("hidden");
-        loadQuestion();
+        // 3'erli gruplar halinde satır toplamlarını kontrol et
+        const data = levelsData[currentLevel - 1];
+        let row1 = gridValues[0] + gridValues[1] + gridValues[2];
+        let row2 = gridValues[3] + gridValues[4] + gridValues[5];
+        let row3 = gridValues[6] + gridValues[7] + gridValues[8];
+
+        if(row1 === data.targets[0] && row2 === data.targets[1] && row3 === data.targets[2]) {
+            clearInterval(timerInterval);
+            score += 10; // Bulmaca başarı puanı
+            document.getElementById("screen-game").classList.add("hidden");
+            document.getElementById("screen-question").classList.remove("hidden");
+            loadQuestion();
+        } else {
+            alert(`Bulmaca henüz çözülmedi! Satır toplamlarını hedeflere (${data.targets.join(", ")}) ulaştırmalısın. (Şu anki: ${row1}, ${row2}, ${row3})`);
+        }
     }
 
     function loadQuestion() {
-        const qData = questions[currentLevel - 1];
+        const qData = levelsData[currentLevel - 1].question;
         document.getElementById("questionText").innerText = qData.q;
         const optContainer = document.getElementById("optionsContainer");
         optContainer.innerHTML = "";
@@ -165,7 +201,7 @@
     function checkAnswer(selected, correct) {
         if(selected === correct) {
             score += 5; // Soru puanı
-            alert("Doğru cevap! +5 Puan kazandın.");
+            alert("Tebrikler, doğru cevap! +5 Puan kazandın.");
         } else {
             alert("Yanlış cevap!");
         }
