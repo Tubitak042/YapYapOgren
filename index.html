@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V18)</title>
-    <!-- Firebase SDK (Ortak Canlı Sıralama İçin) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V19)</title>
+    <!-- Ortak Canlı Sıralama İçin Firebase Bağı -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -90,7 +90,7 @@
 <body>
 
 <div class="container" id="app">
-    <div class="version-badge">Sürüm V18 - Bulmaca Oyunu (Canlı Sıralama)</div>
+    <div class="version-badge">Sürüm V19 - Bulmaca Oyunu (Küresel Ortak Sıralama)</div>
     <h1>Tübitak Kırlangıçları</h1>
     <p>TÜBİTAK Proje Bulmaca İstasyonu</p>
 
@@ -129,13 +129,15 @@
 
     <!-- Liderlik Tablosu -->
     <div id="screen-leaderboard" class="hidden">
-        <h2>🏆 TÜBİTAK Canlı Liderlik Sıralaması (Max 15 Puan)</h2>
-        <p style="font-size:0.85rem; color:#94a3b8;">(Tüm cihazlardan oynayanların ortak sıralaması)</p>
+        <h2>🏆 TÜBİTAK Canlı Ortak Sıralama</h2>
+        <p style="font-size:0.85rem; color:#94a3b8;">(Tüm farklı hesap ve cihazların ortak liderlik tablosu)</p>
         <table>
             <thead>
                 <tr><th>Sıra</th><th>İsim</th><th>Toplam Puan</th></tr>
             </thead>
-            <tbody id="leaderboardBody"></tbody>
+            <tbody id="leaderboardBody">
+                <tr><td colspan="3" style="color:#cbd5e1;">Sıralama yükleniyor...</td></tr>
+            </tbody>
         </table>
         <br>
         <button class="btn" onclick="playSound(); location.reload();">Yeniden Oyna</button>
@@ -143,14 +145,14 @@
 </div>
 
 <script>
-    // Firebase Ortak Veritabanı Yapılandırması
+    // Küresel Herkese Açık Firebase Veritabanı Yapılandırması
     const firebaseConfig = {
-        databaseURL: "https://tubitak-kirlangiclari-default-rtdb.firebaseio.com/"
+        databaseURL: "https://jsonstore-default-rtdb.firebaseio.com/"
     };
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
-    const database = firebase.database();
+    const db = firebase.database();
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound() {
@@ -445,31 +447,41 @@
         }
     }
 
-    // Ortak Canlı Sıralamayı Firebase'den Çekme ve Kaydetme
+    // Farklı Google Hesapları ve Cihazlar İçin Ortak Canlı Sıralama Mantığı
     function showLeaderboard() {
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        // Yeni skoru ortak veritabanına ekle
-        const scoresRef = database.ref('leaderboard');
-        scoresRef.push({
+        const leaderRef = db.ref('tubitak_kirlangiclari_scores');
+        
+        // Yeni tamamlanan skoru küresel veritabanına ekle
+        leaderRef.push({
             name: playerName,
             score: score,
-            timestamp: Date.now()
-        });
+            date: new Date().toLocaleDateString('tr-TR')
+        }).then(() => {
+            // Veritabanındaki tüm skorları çek
+            leaderRef.once('value', (snapshot) => {
+                let list = [];
+                snapshot.forEach((child) => {
+                    list.push(child.val());
+                });
 
-        // Tüm skorları çekip en yüksek puana göre sırala
-        scoresRef.orderByChild('score').limitToLast(50).once('value', (snapshot) => {
-            let lb = [];
-            snapshot.forEach((child) => {
-                lb.push(child.val());
-            });
-            lb.sort((a,b) => b.score - a.score);
+                // En yüksek skora göre 1. 2. 3. olarak sırala
+                list.sort((a,b) => b.score - a.score);
 
-            const tbody = document.getElementById("leaderboardBody");
-            tbody.innerHTML = "";
-            lb.forEach((item, index) => {
-                tbody.innerHTML += `<tr><td>${index+1}</td><td>${item.name}</td><td>${item.score} / 15 Puan</td></tr>`;
+                const tbody = document.getElementById("leaderboardBody");
+                tbody.innerHTML = "";
+                
+                list.forEach((item, index) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${index + 1}.</strong></td>
+                            <td>${item.name}</td>
+                            <td>${item.score} / 15 Puan</td>
+                        </tr>
+                    `;
+                });
             });
         });
     }
