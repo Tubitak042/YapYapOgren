@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TÜBİTAK - Konya Hexologic Macerası (SÜRÜM V16)</title>
+    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V17)</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -87,15 +87,14 @@
 <body>
 
 <div class="container" id="app">
-    <div class="version-badge">SÜRÜM V16 - Net & Anlaşılır Hexologic</div>
-    <h1>KONYA HEXOLOGİC</h1>
+    <div class="version-badge">Sürüm V17 - Bulmaca Oyunu</div>
+    <h1>Tübitak Kırlangıçları</h1>
     <p>TÜBİTAK Proje Bulmaca İstasyonu</p>
 
     <!-- Giriş Ekranı -->
     <div id="screen-start">
-        <p style="margin: 15px 0; font-size: 1.1rem;">Yarışmaya başlamak için adını ve soyadını gir:</p>
-        <input type="text" id="playerName" placeholder="Adınız Soyadınız" style="padding: 12px; font-size: 1.1rem; border-radius: 10px; border: 1px solid #64748b; width: 80%; max-width: 300px; margin-bottom: 15px; background: rgba(15,23,42,0.8); color: white; text-align: center;"><br>
-        <p style="color: #38bdf8; font-weight: bold; margin-bottom: 20px;">Proje Takımı: Tübitak Kırlangıçları</p>
+        <p style="margin: 20px 0; font-size: 1.1rem;">Yarışmaya başlamak için adını ve soyadını gir:</p>
+        <input type="text" id="playerName" placeholder="Adınız Soyadınız" style="padding: 12px; font-size: 1.1rem; border-radius: 10px; border: 1px solid #64748b; width: 80%; max-width: 300px; margin-bottom: 25px; background: rgba(15,23,42,0.8); color: white; text-align: center;"><br>
         <button class="btn" onclick="playSound(); startGame();">Oyunu Başlat</button>
     </div>
 
@@ -235,7 +234,6 @@
         const data = levelsData[currentLevel - 1];
 
         if(data.gridType === 1) {
-            // 1. Bölüm: Çok net ve anlaşılır 3 satırlı yapı (6, 4, 5 hedefleri)
             board.innerHTML = `
                 <div class="hex-row">
                     <div class="hex fixed-target">6</div>
@@ -255,7 +253,6 @@
                 </div>
             `;
         } else if(data.gridType === 2) {
-            // 2. Bölüm: 4 satırlı daha geniş net yapı (8, 5, 6, 7 hedefleri)
             board.innerHTML = `
                 <div class="hex-row">
                     <div class="hex fixed-target">8</div>
@@ -276,7 +273,7 @@
                 </div>
             `;
         } else {
-            // 3. Bölüm: Net ve mantıklı 4 satırlı bulmaca (9, 6, 5, 8 hedefleri)
+            // 3. Bölüm
             board.innerHTML = `
                 <div class="hex-row">
                     <div class="hex fixed-target">9</div>
@@ -343,6 +340,24 @@
 
             if(sum6 === 6) { if(c6) c6.classList.add("solved"); if(c7) c7.classList.add("solved"); }
             else { if(c6) c6.classList.remove("solved"); if(c7) c7.classList.remove("solved"); }
+        } else if(data.gridType === 3) {
+            // 3. Bölüm canlı yeşil yanma kontrolü
+            let sum9 = grid[0] + grid[1] + grid[2];
+            let sum6 = grid[3] + grid[4];
+            let sum5 = grid[5] + grid[6];
+
+            let c0 = document.getElementById("c0"), c1 = document.getElementById("c1"), c2 = document.getElementById("c2");
+            let c3 = document.getElementById("c3"), c4 = document.getElementById("c4");
+            let c5 = document.getElementById("c5"), c6 = document.getElementById("c6");
+
+            if(sum9 === 9) { if(c0) c0.classList.add("solved"); if(c1) c1.classList.add("solved"); if(c2) c2.classList.add("solved"); }
+            else { if(c0) c0.classList.remove("solved"); if(c1) c1.classList.remove("solved"); if(c2) c2.classList.remove("solved"); }
+
+            if(sum6 === 6) { if(c3) c3.classList.add("solved"); if(c4) c4.classList.add("solved"); }
+            else { if(c3) c3.classList.remove("solved"); if(c4) c4.classList.remove("solved"); }
+
+            if(sum5 === 5) { if(c5) c5.classList.add("solved"); if(c6) c6.classList.add("solved"); }
+            else { if(c5) c5.classList.remove("solved"); if(c6) c6.classList.remove("solved"); }
         }
     }
 
@@ -423,10 +438,10 @@
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v16") || "[]");
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v17") || "[]");
         lb.push({ name: playerName, score: score });
         lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("tubitak_lb_v16", JSON.stringify(lb));
+        localStorage.setItem("tubitak_lb_v17", JSON.stringify(lb));
 
         const tbody = document.getElementById("leaderboardBody");
         tbody.innerHTML = "";
