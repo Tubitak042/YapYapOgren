@@ -27,12 +27,11 @@
         h1 { color: #f43f5e; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .timer { font-size: 1.4rem; color: #facc15; margin: 15px 0; font-weight: bold; }
         
-        /* Hexagon Grid Tasarımı */
         .hex-container { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 25px 0; }
         .hex-row { display: flex; gap: 8px; justify-content: center; }
         
         .hex { 
-            width: 65px; height: 75px; 
+            width: 70px; height: 80px; 
             background: #fde047; 
             position: relative; 
             display: flex; align-items: center; justify-content: center; 
@@ -41,11 +40,18 @@
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
             transition: 0.2s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            border: 3px solid transparent;
         }
         .hex:hover { background: #facc15; transform: scale(1.05); }
         
-        /* Sabit / Hedef veya İpucu Hücreleri */
-        .hex.fixed { background: #f97316; color: white; cursor: default; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+        /* Doğru yapıldığında yeşil çerçeve efekti */
+        .hex.solved { 
+            background: #4ade80 !important; 
+            border-color: #16a34a !important;
+            box-shadow: 0 0 15px #4ade80;
+        }
+
+        .hex.fixed { background: #f97316; color: white; cursor: default; }
         .hex.clue { background: #0284c7; color: white; font-size: 1.1rem; cursor: default; }
 
         .btn { background: #f43f5e; color: white; border: none; padding: 12px 28px; font-size: 1.1rem; border-radius: 12px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.2s; box-shadow: 0 4px 10px rgba(244,63,94,0.4); }
@@ -78,9 +84,8 @@
     <div id="screen-game" class="hidden">
         <h3 id="levelTitle" style="color: #38bdf8;">1. Bölüm</h3>
         <div class="timer" id="timer">Kalan Süre: 03:00</div>
-        <p style="font-size: 0.95rem; color: #cbd5e1;">Altıgenlere tıklayarak sayıları değiştir (1-3). Satır ve sütun hedeflerini tamamla!</p>
+        <p style="font-size: 0.95rem; color: #cbd5e1;">Altıgenlere tıklayarak sayıları değiştir. Hedef toplamlara ulaşınca yeşil kenar kaplaması aktif olur!</p>
         
-        <!-- Görseldeki Gibi Hexagon Izgarası -->
         <div class="hex-container" id="hexGridContainer"></div>
         
         <button class="btn" onclick="playSound(); checkPuzzle();">Bölümü Tamamla</button>
@@ -108,14 +113,13 @@
 </div>
 
 <script>
-    // Web Audio API ile tıklama sesi üretici (Harici dosyaya gerek kalmaz)
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound() {
         if (audioCtx.state === 'suspended') { audioCtx.resume(); }
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 nota frekansı
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
         osc.connect(gain);
@@ -130,8 +134,7 @@
     let timeLeft = 180;
     let playerName = "";
     
-    // Bulmaca hücre dizilimleri ve değerleri
-    let currentGridValues = [1, 2, 1, 2, 1]; // Düzenlenebilir hücreler
+    let currentGridValues = [2, 1, 2, 1, 2];
 
     const levelsData = [
         {
@@ -179,7 +182,7 @@
         const data = levelsData[currentLevel - 1];
         timeLeft = data.time;
         document.getElementById("levelTitle").innerText = data.title;
-        currentGridValues = [1, 1, 2, 1, 1]; // Bölüm başlangıç değerleri
+        currentGridValues = [1, 2, 1, 2, 1];
         
         startTimer();
         renderHexGrid();
@@ -205,18 +208,16 @@
         container.innerHTML = "";
         const data = levelsData[currentLevel - 1];
 
-        // Görseldeki gibi karmaşık ve şık bir Hexagon yerleşimi oluşturalım
+        // İşaretler kaldırıldı, fotoğraf düzenine benzer saf altıgen yapı oluşturuldu
         container.innerHTML = `
             <div class="hex-row">
                 <div class="hex clue">H:${data.targetSum}</div>
                 <div class="hex" onclick="playSound(); changeHex(0)" id="h0">${currentGridValues[0]}</div>
-                <div class="hex fixed">||</div>
                 <div class="hex" onclick="playSound(); changeHex(1)" id="h1">${currentGridValues[1]}</div>
             </div>
-            <div class="hex-row" style="margin-left: 30px;">
+            <div class="hex-row" style="margin-left: 25px;">
                 <div class="hex fixed">5</div>
                 <div class="hex" onclick="playSound(); changeHex(2)" id="h2">${currentGridValues[2]}</div>
-                <div class="hex fixed">></div>
                 <div class="hex" onclick="playSound(); changeHex(3)" id="h3">${currentGridValues[3]}</div>
                 <div class="hex clue">Hedef</div>
             </div>
@@ -226,16 +227,33 @@
                 <div class="hex fixed">6</div>
             </div>
         `;
+        checkLiveSum();
     }
 
     function changeHex(index) {
-        currentGridValues[index] = (currentGridValues[index] % 3) + 1; // 1, 2, 3 döngüsü
+        currentGridValues[index] = (currentGridValues[index] % 3) + 1;
         document.getElementById(`h${index}`).innerText = currentGridValues[index];
+        checkLiveSum(); // Anlık olarak toplamı kontrol edip yeşil çerçeve ver
+    }
+
+    function checkLiveSum() {
+        // Örnek bir satır toplamı hedefe ulaştığında yeşil çerçeve kaplaması uygula
+        let rowSum = currentGridValues[0] + currentGridValues[1];
+        const h0 = document.getElementById("h0");
+        const h1 = document.getElementById("h1");
+        
+        if(rowSum === 4) { // Örnek tetiklenme koşulu
+            if(h0) h0.classList.add("solved");
+            if(h1) h1.classList.add("solved");
+        } else {
+            if(h0) h0.classList.remove("solved");
+            if(h1) h1.classList.remove("solved");
+        }
     }
 
     function checkPuzzle() {
         clearInterval(timerInterval);
-        score += 10; // Bulmaca çözme puanı
+        score += 10;
         document.getElementById("screen-game").classList.add("hidden");
         document.getElementById("screen-question").classList.remove("hidden");
         loadQuestion();
@@ -257,7 +275,7 @@
 
     function checkAnswer(selected, correct) {
         if(selected === correct) {
-            score += 5; // Soru puanı
+            score += 5;
             alert("Tebrikler, doğru cevap! +5 Puan kazandın.");
         } else {
             alert("Yanlış cevap!");
@@ -280,10 +298,10 @@
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v2") || "[]");
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v3") || "[]");
         lb.push({ name: playerName, score: score });
         lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("tubitak_lb_v2", JSON.stringify(lb));
+        localStorage.setItem("tubitak_lb_v3", JSON.stringify(lb));
 
         const tbody = document.getElementById("leaderboardBody");
         tbody.innerHTML = "";
