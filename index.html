@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V17)</title>
+    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V18)</title>
+    <!-- Firebase SDK (Ortak Canlı Sıralama İçin) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -87,7 +90,7 @@
 <body>
 
 <div class="container" id="app">
-    <div class="version-badge">Sürüm V17 - Bulmaca Oyunu</div>
+    <div class="version-badge">Sürüm V18 - Bulmaca Oyunu (Canlı Sıralama)</div>
     <h1>Tübitak Kırlangıçları</h1>
     <p>TÜBİTAK Proje Bulmaca İstasyonu</p>
 
@@ -126,7 +129,8 @@
 
     <!-- Liderlik Tablosu -->
     <div id="screen-leaderboard" class="hidden">
-        <h2>🏆 TÜBİTAK Liderlik Sıralaması (Max 15 Puan)</h2>
+        <h2>🏆 TÜBİTAK Canlı Liderlik Sıralaması (Max 15 Puan)</h2>
+        <p style="font-size:0.85rem; color:#94a3b8;">(Tüm cihazlardan oynayanların ortak sıralaması)</p>
         <table>
             <thead>
                 <tr><th>Sıra</th><th>İsim</th><th>Toplam Puan</th></tr>
@@ -139,6 +143,15 @@
 </div>
 
 <script>
+    // Firebase Ortak Veritabanı Yapılandırması
+    const firebaseConfig = {
+        databaseURL: "https://tubitak-kirlangiclari-default-rtdb.firebaseio.com/"
+    };
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound() {
         if (audioCtx.state === 'suspended') { audioCtx.resume(); }
@@ -273,7 +286,6 @@
                 </div>
             `;
         } else {
-            // 3. Bölüm
             board.innerHTML = `
                 <div class="hex-row">
                     <div class="hex fixed-target">9</div>
@@ -341,7 +353,6 @@
             if(sum6 === 6) { if(c6) c6.classList.add("solved"); if(c7) c7.classList.add("solved"); }
             else { if(c6) c6.classList.remove("solved"); if(c7) c7.classList.remove("solved"); }
         } else if(data.gridType === 3) {
-            // 3. Bölüm canlı yeşil yanma kontrolü
             let sum9 = grid[0] + grid[1] + grid[2];
             let sum6 = grid[3] + grid[4];
             let sum5 = grid[5] + grid[6];
@@ -434,19 +445,32 @@
         }
     }
 
+    // Ortak Canlı Sıralamayı Firebase'den Çekme ve Kaydetme
     function showLeaderboard() {
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v17") || "[]");
-        lb.push({ name: playerName, score: score });
-        lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("tubitak_lb_v17", JSON.stringify(lb));
+        // Yeni skoru ortak veritabanına ekle
+        const scoresRef = database.ref('leaderboard');
+        scoresRef.push({
+            name: playerName,
+            score: score,
+            timestamp: Date.now()
+        });
 
-        const tbody = document.getElementById("leaderboardBody");
-        tbody.innerHTML = "";
-        lb.forEach((item, index) => {
-            tbody.innerHTML += `<tr><td>${index+1}</td><td>${item.name}</td><td>${item.score} / 15 Puan</td></tr>`;
+        // Tüm skorları çekip en yüksek puana göre sırala
+        scoresRef.orderByChild('score').limitToLast(50).once('value', (snapshot) => {
+            let lb = [];
+            snapshot.forEach((child) => {
+                lb.push(child.val());
+            });
+            lb.sort((a,b) => b.score - a.score);
+
+            const tbody = document.getElementById("leaderboardBody");
+            tbody.innerHTML = "";
+            lb.forEach((item, index) => {
+                tbody.innerHTML += `<tr><td>${index+1}</td><td>${item.name}</td><td>${item.score} / 15 Puan</td></tr>`;
+            });
         });
     }
 </script>
