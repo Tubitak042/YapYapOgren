@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V23)</title>
-    <!-- Ortak Canlı Sıralama İçin Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V24)</title>
     <style>
         :root {
             --primary: #f43f5e;
@@ -53,7 +50,6 @@
             transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
         }
 
-        /* Yeşil ve Kırmızı Panel Parlama Efektleri */
         .container.flash-correct {
             background: rgba(20, 83, 45, 0.85) !important;
             border-color: #22c55e !important;
@@ -67,7 +63,7 @@
         }
 
         .version-badge {
-            background: linear-gradient(135deg, #ec4899, #be185d);
+            background: linear-gradient(135deg, #10b981, #047857);
             color: #ffffff;
             font-size: 0.85rem;
             font-weight: 700;
@@ -76,7 +72,7 @@
             border-radius: 30px;
             display: inline-block;
             margin-bottom: 12px;
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
             text-transform: uppercase;
         }
 
@@ -257,7 +253,7 @@
 <body>
 
 <div class="container" id="app">
-    <div class="version-badge">Sürüm V23 - Kusursuz Matematik & Efektler</div>
+    <div class="version-badge">Sürüm V24 - Kusursuz Bulmaca Oyunu</div>
     <h1>Tübitak Kırlangıçları</h1>
     <p class="subtitle">TÜBİTAK Proje Bulmaca İstasyonu</p>
 
@@ -296,8 +292,8 @@
 
     <!-- Liderlik Tablosu -->
     <div id="screen-leaderboard" class="hidden">
-        <h2 style="color: #f8fafc; font-size: 1.6rem;">🏆 TÜBİTAK Canlı Ortak Sıralama</h2>
-        <p style="font-size:0.9rem; color:#94a3b8;">(Tüm farklı hesap ve cihazların ortak liderlik tablosu)</p>
+        <h2 style="color: #f8fafc; font-size: 1.6rem;">🏆 TÜBİTAK Liderlik Sıralaması</h2>
+        <p style="font-size:0.9rem; color:#94a3b8;">(En yüksek puan alan başarılı yarışmacılar)</p>
         <table>
             <thead>
                 <tr><th>Sıra</th><th>İsim</th><th>Toplam Puan</th></tr>
@@ -312,14 +308,6 @@
 </div>
 
 <script>
-    const firebaseConfig = {
-        databaseURL: "https://jsonstore-default-rtdb.firebaseio.com/"
-    };
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.database();
-
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
     function playSound() {
@@ -449,7 +437,6 @@
         const data = levelsData[currentLevel - 1];
 
         if(data.gridType === 1) {
-            // Tamamen Matematiksel Olarak Doğru Zor Hedefler (7, 5, 6, 5)
             board.innerHTML = `
                 <div class="hex-row">
                     <div class="hex fixed-target">7</div>
@@ -474,7 +461,6 @@
                 </div>
             `;
         } else if(data.gridType === 2) {
-            // Zor Matris (Hedefler: 10, 5, 6, 5)
             board.innerHTML = `
                 <div class="hex-row">
                     <div class="hex fixed-target">10</div>
@@ -500,7 +486,6 @@
                 </div>
             `;
         } else {
-            // Usta Seviyesi Matris (Hedefler: 11, 8, 5, 3)
             board.innerHTML = `
                 <div class="hex-row">
                     <div class="hex fixed-target">11</div>
@@ -662,49 +647,32 @@
         }
     }
 
+    // Yerel Hafıza Destekli Anında Yüklenen Liderlik Tablosu
     function showLeaderboard() {
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        const leaderRef = db.ref('v23_tubitak_leaderboard');
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v24") || "[]");
+        lb.push({ name: playerName, score: score });
+        lb.sort((a,b) => b.score - a.score);
+        localStorage.setItem("tubitak_lb_v24", JSON.stringify(lb));
+
+        const tbody = document.getElementById("leaderboardBody");
+        tbody.innerHTML = "";
         
-        leaderRef.push({
-            playerName: playerName,
-            score: score,
-            timestamp: Date.now()
-        }).then(() => {
-            leaderRef.once('value', (snapshot) => {
-                let list = [];
-                snapshot.forEach((child) => {
-                    const data = child.val();
-                    if(data && (data.playerName || data.name)) {
-                        list.push({
-                            name: data.playerName || data.name,
-                            score: data.score || 0
-                        });
-                    }
-                });
+        lb.forEach((item, index) => {
+            let medal = "";
+            if(index === 0) medal = "🥇 ";
+            else if(index === 1) medal = "🥈 ";
+            else if(index === 2) medal = "🥉 ";
 
-                list.sort((a,b) => b.score - a.score);
-
-                const tbody = document.getElementById("leaderboardBody");
-                tbody.innerHTML = "";
-                
-                list.forEach((item, index) => {
-                    let medal = "";
-                    if(index === 0) medal = "🥇 ";
-                    else if(index === 1) medal = "🥈 ";
-                    else if(index === 2) medal = "🥉 ";
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${medal}${index + 1}.</strong></td>
-                            <td>${item.name}</td>
-                            <td>${item.score} / 15 Puan</td>
-                        </tr>
-                    `;
-                });
-            });
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${medal}${index + 1}.</strong></td>
+                    <td>${item.name}</td>
+                    <td>${item.score} / 15 Puan</td>
+                </tr>
+            `;
         });
     }
 </script>
