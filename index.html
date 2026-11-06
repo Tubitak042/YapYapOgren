@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V20)</title>
+    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V21)</title>
     <!-- Ortak Canlı Sıralama İçin Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -50,6 +50,20 @@
             border: 1px solid var(--card-border); 
             position: relative;
             overflow: hidden;
+            transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+
+        /* Doğru / Yanlış Soru Ekranı Renk Kaplamaları */
+        .container.flash-correct {
+            background: rgba(20, 83, 45, 0.85) !important;
+            border-color: #22c55e !important;
+            box-shadow: 0 0 50px rgba(34, 197, 94, 0.6) !important;
+        }
+
+        .container.flash-wrong {
+            background: rgba(127, 29, 29, 0.85) !important;
+            border-color: #f43f5e !important;
+            box-shadow: 0 0 50px rgba(244, 63, 94, 0.6) !important;
         }
 
         .version-badge {
@@ -95,7 +109,6 @@
             box-shadow: 0 4px 15px rgba(250, 204, 21, 0.15);
         }
 
-        /* Gelirştirilmiş Hexagon Izgarası */
         .hex-board { 
             display: flex; 
             flex-direction: column; 
@@ -244,7 +257,7 @@
 <body>
 
 <div class="container" id="app">
-    <div class="version-badge">Sürüm V20 - Gelişmiş Arayüz</div>
+    <div class="version-badge">Sürüm V21 - Efektli & Canlı Sıralama</div>
     <h1>Tübitak Kırlangıçları</h1>
     <p class="subtitle">TÜBİTAK Proje Bulmaca İstasyonu</p>
 
@@ -309,6 +322,8 @@
     const db = firebase.database();
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Tıklama Sesi
     function playSound() {
         if (audioCtx.state === 'suspended') { audioCtx.resume(); }
         const osc = audioCtx.createOscillator();
@@ -321,6 +336,41 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    // Doğru Cevap Efekt Sesi (Yeşil)
+    function playCorrectSound() {
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.4);
+    }
+
+    // Yanlış Cevap Efekt Sesi (Kırmızı)
+    function playWrongSound() {
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now); // A3
+        osc.frequency.setValueAtTime(164.81, now + 0.15); // E3
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.4);
     }
 
     let currentLevel = 1;
@@ -575,19 +625,24 @@
             const btn = document.createElement("button");
             btn.className = "option-btn";
             btn.innerText = opt;
-            btn.onclick = () => { playSound(); checkAnswer(idx, qData.answer); };
+            btn.onclick = () => { checkAnswer(idx, qData.answer); };
             optContainer.appendChild(btn);
         });
     }
 
     function checkAnswer(selected, correct) {
+        const container = document.getElementById("app");
         if(selected === correct) {
             score += 5;
-            alert("Tebrikler, doğru cevap! +5 Puan kazandın.");
+            playCorrectSound();
+            container.classList.add("flash-correct");
+            setTimeout(() => { container.classList.remove("flash-correct"); }, 1000);
         } else {
-            alert("Yanlış cevap! Puan alamadın.");
+            playWrongSound();
+            container.classList.add("flash-wrong");
+            setTimeout(() => { container.classList.remove("flash-wrong"); }, 1000);
         }
-        nextLevelOrFinish();
+        setTimeout(() => { nextLevelOrFinish(); }, 1000);
     }
 
     function nextLevelOrFinish() {
@@ -601,21 +656,30 @@
         }
     }
 
+    // Sorunsuz İsim Gösterimli Canlı Sıralama Mantığı
     function showLeaderboard() {
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        const leaderRef = db.ref('tubitak_kirlangiclari_scores');
+        const leaderRef = db.ref('v21_tubitak_leaderboard');
         
+        // Yeni tamamlanan skoru veritabanına ekle
         leaderRef.push({
-            name: playerName,
+            playerName: playerName,
             score: score,
-            date: new Date().toLocaleDateString('tr-TR')
+            timestamp: Date.now()
         }).then(() => {
+            // Verileri çek
             leaderRef.once('value', (snapshot) => {
                 let list = [];
                 snapshot.forEach((child) => {
-                    list.push(child.val());
+                    const data = child.val();
+                    if(data && (data.playerName || data.name)) {
+                        list.push({
+                            name: data.playerName || data.name,
+                            score: data.score || 0
+                        });
+                    }
                 });
 
                 list.sort((a,b) => b.score - a.score);
