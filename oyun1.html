@@ -62,6 +62,15 @@
             box-shadow: 0 0 50px rgba(244, 63, 94, 0.6) !important;
         }
 
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
         .version-badge {
             background: linear-gradient(135deg, #10b981, #047857);
             color: #ffffff;
@@ -70,11 +79,23 @@
             letter-spacing: 0.5px;
             padding: 6px 16px;
             border-radius: 30px;
-            display: inline-block;
-            margin-bottom: 12px;
             box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
             text-transform: uppercase;
         }
+
+        .home-btn {
+            background: #475569;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+        .home-btn:hover { background: #64748b; transform: scale(1.05); }
 
         h1 { 
             font-size: 2.2rem;
@@ -253,7 +274,11 @@
 <body>
 
 <div class="container" id="app">
-    <div class="version-badge">Sürüm V24 - Kusursuz Bulmaca Oyunu</div>
+    <div class="top-bar">
+        <a href="index.html" class="home-btn">🏠 Ana Sayfa</a>
+        <div class="version-badge" style="margin:0;">Sürüm V24 - Kusursuz Bulmaca</div>
+    </div>
+    
     <h1>Tübitak Kırlangıçları</h1>
     <p class="subtitle">TÜBİTAK Proje Bulmaca İstasyonu</p>
 
@@ -647,7 +672,6 @@
         }
     }
 
-    // Yerel Hafıza Destekli Anında Yüklenen Liderlik Tablosu
     function showLeaderboard() {
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
