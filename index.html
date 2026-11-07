@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tübitak Kırlangıçları - Oyun Portalı (SÜRÜM V28)</title>
+    <title>Tübitak Kırlangıçları - Oyun Portalı</title>
     <style>
         :root {
             --primary: #f43f5e;
@@ -218,382 +218,76 @@
             box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
             text-decoration: none;
             font-size: 0.95rem;
+            display: inline-block;
+            text-align: center;
         }
 
         .play-btn:hover {
             transform: scale(1.05);
         }
-
-        .game-container-box {
-            max-width: 900px;
-            width: 100%;
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            padding: 35px 30px;
-            border-radius: 28px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-            text-align: center;
-            border: 1px solid var(--card-border);
-            margin: auto;
-            transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
-        }
-
-        /* 1. Oyun Parılama Efektleri Geri Getirildi */
-        .game-container-box.flash-correct { background: rgba(20, 83, 45, 0.85) !important; border-color: #22c55e !important; box-shadow: 0 0 50px rgba(34, 197, 94, 0.6) !important; }
-        .game-container-box.flash-wrong { background: rgba(127, 29, 29, 0.85) !important; border-color: #f43f5e !important; box-shadow: 0 0 50px rgba(244, 63, 94, 0.6) !important; }
-
-        .version-badge {
-            background: linear-gradient(135deg, #10b981, #047857);
-            color: #ffffff;
-            font-size: 0.85rem;
-            font-weight: 700;
-            padding: 6px 16px;
-            border-radius: 30px;
-            display: inline-block;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-        }
-
-        /* Kelime Avı (Wordle Tarzı) Renk Kodları */
-        .wordle-board {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            align-items: center;
-            margin: 20px 0;
-        }
-        .wordle-row {
-            display: flex;
-            gap: 8px;
-        }
-        .wordle-tile {
-            width: 48px;
-            height: 48px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: white;
-            text-transform: uppercase;
-            transition: 0.3s;
-        }
-        .wordle-tile.correct { background: #22c55e !important; border-color: #22c55e !important; }
-        .wordle-tile.present { background: #eab308 !important; border-color: #eab308 !important; }
-        .wordle-tile.absent { background: #334155 !important; border-color: #334155 !important; }
-        .wordle-tile.hint-revealed { background: #0284c7 !important; border-color: #38bdf8 !important; color: white !important; }
-
-        .keyboard {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            align-items: center;
-            margin-top: 15px;
-        }
-        .kb-row {
-            display: flex;
-            gap: 5px;
-        }
-        .kb-key {
-            background: #334155;
-            color: white;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: 0.1s;
-        }
-        .kb-key:hover { background: #475569; }
-        .kb-key.wide { padding: 10px 18px; background: #475569; }
-
-        .input-style {
-            padding: 14px 20px; font-size: 1.1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.2); 
-            width: 85%; max-width: 320px; margin-bottom: 25px; background: rgba(15, 23, 42, 0.8); color: white; text-align: center; outline: none;
-        }
-
-        .timer-box { 
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(250, 204, 21, 0.3);
-            border-radius: 16px;
-            padding: 10px 20px;
-            display: inline-block;
-            font-size: 1.3rem; 
-            color: var(--warning); 
-            margin: 15px 0; 
-            font-weight: 800; 
-        }
-
-        .hex-board { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 25px 0; }
-        .hex-row { display: flex; gap: 10px; justify-content: center; align-items: center; }
-        .hex { 
-            width: 62px; height: 72px; background: linear-gradient(145deg, #fbcfe8, #f472b6); 
-            position: relative; display: flex; align-items: center; justify-content: center; 
-            font-size: 1.5rem; font-weight: 800; color: #831843; cursor: pointer; 
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            user-select: none;
-        }
-        .hex.fixed-target { background: linear-gradient(145deg, #f43f5e, #be123c); color: white; font-size: 1.25rem; }
-        .hex.solved { background: linear-gradient(145deg, #4ade80, #16a34a) !important; color: #052e16 !important; }
-
-        table { width: 100%; margin-top: 25px; border-collapse: separate; border-spacing: 0 8px; }
-        th { padding: 12px; color: #94a3b8; font-size: 0.95rem; text-transform: uppercase; }
-        td { padding: 14px; background: rgba(15, 23, 42, 0.5); text-align: center; font-weight: 600; }
-        td:first-child { border-radius: 12px 0 0 12px; }
-        td:last-child { border-radius: 0 12px 12px 0; }
-        tr:nth-child(1) td { background: rgba(234, 179, 8, 0.15); color: #facc15; }
-        tr:nth-child(2) td { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
-        tr:nth-child(3) td { background: rgba(180, 83, 9, 0.15); color: #f97316; }
-
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
-    <!-- PORTAL ANASAYFA EKRANI -->
-    <div id="portal-home">
-        <header>
-            <div class="header-top">
-                <div class="logo-area">
-                    <h1>Tübitak Kırlangıçları Portal</h1>
-                    <p>Eğitici Zeka Bulmacaları ve Tarih İstasyonu</p>
-                </div>
-                <div class="search-box">
-                    <input type="text" placeholder="Oyun ara..." id="searchInput" onkeyup="filterGames()">
-                </div>
+    <header>
+        <div class="header-top">
+            <div class="logo-area">
+                <h1>Tübitak Kırlangıçları Portal</h1>
+                <p>Eğitici Zeka Bulmacaları ve Tarih İstasyonu</p>
             </div>
-            <div class="categories">
-                <button class="cat-btn active" onclick="filterCategory('all', this)">Tümü</button>
-                <button class="cat-btn" onclick="filterCategory('tubitak', this)">TÜBİTAK Projeleri</button>
-                <button class="cat-btn" onclick="filterCategory('history', this)">Konya & Tarih</button>
-                <button class="cat-btn" onclick="filterCategory('arcade', this)">Zeka & Bulmaca</button>
-            </div>
-        </header>
-
-        <div class="games-grid" id="gamesGrid">
-            <div class="game-card" data-category="tubitak history arcade">
-                <div class="game-preview">
-                    <span class="category-tag">Tübitak Projesi</span>
-                    <div class="game-preview-icon">🧩</div>
-                </div>
-                <div class="game-info">
-                    <div>
-                        <h3 class="game-title">Hexologic & Konya Bulmacası</h3>
-                        <p class="game-desc">Altıgen hücrelere sayıları yerleştir, hedef toplamları tuttur ve Konya kültür sorularını yanıtla!</p>
-                    </div>
-                    <div class="game-meta">
-                        <span class="author-info">Yapan: Tübitak Kırlangıçları</span>
-                        <button class="play-btn" onclick="openHexGame()">Oyunu Oyna</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="game-card" data-category="history arcade">
-                <div class="game-preview" style="background: linear-gradient(135deg, #0284c7, #0f172a);">
-                    <span class="category-tag">Yeni Oyun</span>
-                    <div class="game-preview-icon">🔤</div>
-                </div>
-                <div class="game-info">
-                    <div>
-                        <h3 class="game-title">Zeka Labirenti: Konya Kelime Avı</h3>
-                        <p class="game-desc">Konya kültürü ve tarihi hakkındaki max 7 harfli soruları Wordle tarzı tahmin et, puanları topla!</p>
-                    </div>
-                    <div class="game-meta">
-                        <span class="author-info">Yapan: Tübitak Kırlangıçları</span>
-                        <button class="play-btn" onclick="openWordGame()">Oyunu Oyna</button>
-                    </div>
-                </div>
+            <div class="search-box">
+                <input type="text" placeholder="Oyun ara..." id="searchInput" onkeyup="filterGames()">
             </div>
         </div>
-    </div>
-
-    <!-- HEXOLOGİC OYUN EKRANI -->
-    <div id="game-container" class="game-container-box hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <button class="play-btn" style="background: #475569; padding: 6px 14px; font-size: 0.85rem;" onclick="returnToPortal()">🏠 Ana Sayfa</button>
-            <div class="version-badge" style="margin:0;">Hexologic Bulmaca</div>
+        <div class="categories">
+            <button class="cat-btn active" onclick="filterCategory('all', this)">Tümü</button>
+            <button class="cat-btn" onclick="filterCategory('tubitak', this)">TÜBİTAK Projeleri</button>
+            <button class="cat-btn" onclick="filterCategory('history', this)">Konya & Tarih</button>
+            <button class="cat-btn" onclick="filterCategory('arcade', this)">Zeka & Bulmaca</button>
         </div>
-        
-        <h1 style="font-size: 1.8rem; background: linear-gradient(to right, #fb7185, #f43f5e); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hexologic İstasyonu</h1>
-        
-        <div id="screen-start">
-            <p style="margin: 25px 0 15px 0; font-size: 1.1rem;">Yarışmaya başlamak için adını ve soyadını gir:</p>
-            <input type="text" id="playerName" class="input-style" placeholder="Adınız Soyadınız"><br>
-            <button class="play-btn" style="padding: 12px 30px; font-size: 1.1rem;" onclick="startHexGame()">Oyunu Başlat</button>
-        </div>
+    </header>
 
-        <div id="screen-game" class="hidden">
-            <h3 id="levelTitle" style="color: var(--accent); font-size: 1.2rem;">1. Bölüm</h3>
-            <div class="timer-box" id="timer">Kalan Süre: 03:00</div>
-            <div class="hex-board" id="hexBoard"></div>
-            <button class="play-btn" style="padding: 12px 30px; font-size: 1.1rem;" onclick="checkHexPuzzle()">Bölümü Tamamla</button>
-        </div>
-
-        <div id="screen-question" class="hidden">
-            <h3 style="color: var(--warning); font-size: 1.3rem;">Konya Kültür & Tarih Sorusu (+5 Puan)</h3>
-            <p id="questionText" style="font-size: 1.1rem; margin: 20px 0; font-weight: 600; color: #f8fafc;"></p>
-            <div class="options" id="optionsContainer"></div>
-        </div>
-
-        <div id="screen-gameover" class="hidden">
-            <h2 style="color: var(--primary); font-size: 1.6rem; margin-bottom: 10px;">Oyun Bitti - Elendiniz!</h2>
-            <p id="failReason" style="font-size: 1.05rem; margin: 15px 0; color: #cbd5e1;"></p>
-            <button class="play-btn" style="padding: 10px 25px;" onclick="returnToPortal()">Ana Sayfaya Dön</button>
-        </div>
-
-        <div id="screen-leaderboard" class="hidden">
-            <h2 style="color: #f8fafc; font-size: 1.5rem;">🏆 Liderlik Sıralaması</h2>
-            <table>
-                <thead><tr><th>Sıra</th><th>İsim</th><th>Toplam Puan</th></tr></thead>
-                <tbody id="leaderboardBody"></tbody>
-            </table>
-            <br>
-            <button class="play-btn" style="padding: 10px 25px;" onclick="returnToPortal()">Ana Sayfaya Dön</button>
-        </div>
-    </div>
-
-    <!-- ZEKA LABİRENTİ: KELİME AVI EKRANI -->
-    <div id="word-game-container" class="game-container-box hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <button class="play-btn" style="background: #475569; padding: 6px 14px; font-size: 0.85rem;" onclick="returnToPortal()">🏠 Ana Sayfa</button>
-            <div class="version-badge" style="margin:0; background: #0284c7;">Zeka Labirenti - Kelime Avı</div>
-            <div id="wordScoreDisplay" style="font-weight: 800; color: var(--warning); font-size: 1.1rem;">Puan: 0</div>
-        </div>
-
-        <div id="word-screen-start">
-            <h2 style="color: #38bdf8; margin-bottom: 15px;">Zeka Labirenti Kelime Avına Hoş Geldin!</h2>
-            <p style="color: #94a3b8; margin-bottom: 20px;">Konya kültürü ve tarihi hakkındaki max 7 harfli 8 soruyu tahmin et. Her doğru soru 100 puandır!</p>
-            <input type="text" id="wordPlayerName" class="input-style" placeholder="Adınız Soyadınız"><br>
-            <button class="play-btn" style="padding: 12px 30px; font-size: 1.1rem;" onclick="startWordGameSession()">Macera Başlasın</button>
-        </div>
-
-        <div id="word-screen-play" class="hidden">
-            <div id="wordQuestionCounter" style="color: #38bdf8; font-weight: 700; margin-bottom: 5px;">Soru 1 / 8</div>
-            <div id="wordQuestionText" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.3); padding: 15px; border-radius: 12px; font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: #f8fafc;">Soru yükleniyor...</div>
-            
-            <div class="wordle-board" id="wordleBoard"></div>
-
-            <!-- İpucu ve İşlem Alanı -->
-            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                <button class="play-btn" style="background: #eab308; color: #0f172a; padding: 8px 16px; font-size: 0.85rem;" id="freeHintBtn" onclick="useFreeHint()">💡 Ücretsiz İpucu (1)</button>
-                <button class="play-btn" style="background: #d97706; padding: 8px 16px; font-size: 0.85rem;" id="paidHintBtn" onclick="usePaidHint()">💡 İpucu Satın Al (-25 Puan)</button>
+    <div class="games-grid" id="gamesGrid">
+        <!-- 1. Oyun Kartı -->
+        <div class="game-card" data-category="tubitak history arcade">
+            <div class="game-preview">
+                <span class="category-tag">Tübitak Projesi</span>
+                <div class="game-preview-icon">🧩</div>
             </div>
-            <p id="hintMessage" style="color: #38bdf8; font-size: 0.9rem; min-height: 24px; font-weight: 600;"></p>
-
-            <!-- Sanal Klavye -->
-            <div class="keyboard" id="virtualKeyboard">
-                <div class="kb-row">
-                    <button class="kb-key" onclick="pressKey('E')">E</button>
-                    <button class="kb-key" onclick="pressKey('R')">R</button>
-                    <button class="kb-key" onclick="pressKey('T')">T</button>
-                    <button class="kb-key" onclick="pressKey('Y')">Y</button>
-                    <button class="kb-key" onclick="pressKey('U')">U</button>
-                    <button class="kb-key" onclick="pressKey('İ')">İ</button>
-                    <button class="kb-key" onclick="pressKey('O')">O</button>
-                    <button class="kb-key" onclick="pressKey('P')">P</button>
-                    <button class="kb-key" onclick="pressKey('Ğ')">Ğ</button>
-                    <button class="kb-key" onclick="pressKey('Ü')">Ü</button>
+            <div class="game-info">
+                <div>
+                    <h3 class="game-title">Hexologic & Konya Bulmacası</h3>
+                    <p class="game-desc">Altıgen hücrelere sayıları yerleştir, hedef toplamları tuttur ve Konya kültür sorularını yanıtla!</p>
                 </div>
-                <div class="kb-row">
-                    <button class="kb-key" onclick="pressKey('A')">A</button>
-                    <button class="kb-key" onclick="pressKey('S')">S</button>
-                    <button class="kb-key" onclick="pressKey('D')">D</button>
-                    <button class="kb-key" onclick="pressKey('F')">F</button>
-                    <button class="kb-key" onclick="pressKey('G')">G</button>
-                    <button class="kb-key" onclick="pressKey('H')">H</button>
-                    <button class="kb-key" onclick="pressKey('J')">J</button>
-                    <button class="kb-key" onclick="pressKey('K')">K</button>
-                    <button class="kb-key" onclick="pressKey('L')">L</button>
-                    <button class="kb-key" onclick="pressKey('Ş')">Ş</button>
-                </div>
-                <div class="kb-row">
-                    <button class="kb-key wide" onclick="submitWordGuess()">GİRİŞ</button>
-                    <button class="kb-key" onclick="pressKey('Z')">Z</button>
-                    <button class="kb-key" onclick="pressKey('C')">C</button>
-                    <button class="kb-key" onclick="pressKey('V')">V</button>
-                    <button class="kb-key" onclick="pressKey('B')">B</button>
-                    <button class="kb-key" onclick="pressKey('N')">N</button>
-                    <button class="kb-key" onclick="pressKey('M')">M</button>
-                    <button class="kb-key" onclick="pressKey('Ö')">Ö</button>
-                    <button class="kb-key" onclick="pressKey('Ç')">Ç</button>
-                    <button class="kb-key wide" onclick="deleteWordLetter()">SİL</button>
+                <div class="game-meta">
+                    <span class="author-info">Yapan: Tübitak Kırlangıçları</span>
+                    <a href="oyun1.html" class="play-btn">Oyunu Oyna</a>
                 </div>
             </div>
         </div>
 
-        <div id="word-screen-finish" class="hidden">
-            <h2 style="color: #22c55e; font-size: 1.8rem; margin-bottom: 10px;">Zeka Labirentini Tamamladın! 🎉</h2>
-            <p id="wordFinalScoreText" style="font-size: 1.2rem; margin: 20px 0; color: #f8fafc; font-weight: 700;"></p>
-            <table style="margin-top: 15px;">
-                <thead><tr><th>Sıra</th><th>İsim</th><th>Kelime Avı Puanı</th></tr></thead>
-                <tbody id="wordLeaderboardBody"></tbody>
-            </table>
-            <br>
-            <button class="play-btn" style="padding: 10px 25px; margin-top: 15px;" onclick="returnToPortal()">Ana Sayfaya Dön</button>
+        <!-- 2. Oyun Kartı -->
+        <div class="game-card" data-category="history arcade">
+            <div class="game-preview" style="background: linear-gradient(135deg, #0284c7, #0f172a);">
+                <span class="category-tag">Yeni Oyun</span>
+                <div class="game-preview-icon">🔤</div>
+            </div>
+            <div class="game-info">
+                <div>
+                    <h3 class="game-title">Zeka Labirenti: Konya Kelime Avı</h3>
+                    <p class="game-desc">Konya kültürü ve tarihi hakkındaki max 7 harfli soruları Wordle tarzı tahmin et, puanları topla!</p>
+                </div>
+                <div class="game-meta">
+                    <span class="author-info">Yapan: Tübitak Kırlangıçları</span>
+                    <a href="oyun2.html" class="play-btn">Oyunu Oyna</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playClickSound() {
-        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.08);
-    }
-    function playCorrectSound() {
-        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.setValueAtTime(659.25, now + 0.1);
-        osc.frequency.setValueAtTime(783.99, now + 0.2);
-        gain.gain.setValueAtTime(0.12, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.35);
-    }
-    function playWrongSound() {
-        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, now);
-        osc.frequency.setValueAtTime(164.81, now + 0.12);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.3);
-    }
-
-    function openHexGame() {
-        playClickSound();
-        document.getElementById('portal-home').classList.add('hidden');
-        document.getElementById('game-container').classList.remove('hidden');
-    }
-    function openWordGame() {
-        playClickSound();
-        document.getElementById('portal-home').classList.add('hidden');
-        document.getElementById('word-game-container').classList.remove('hidden');
-    }
-    function returnToPortal() {
-        playClickSound();
-        location.reload();
-    }
-
     function filterCategory(category, btnElement) {
         document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
@@ -611,385 +305,6 @@
             const desc = card.querySelector('.game-desc').innerText.toLowerCase();
             if(title.includes(query) || desc.includes(query)) card.style.display = 'flex';
             else card.style.display = 'none';
-        });
-    }
-
-    // --- 1. OYUN: HEXOLOGİC MANTIĞI (Yeşil/Kırmızı Parlama Efektleriyle) ---
-    let currentLevel = 1, score = 0, timerInterval, timeLeft = 180, playerName = "", grid = [1,1,1,1,1,1,1,1,1,1];
-    const levelsData = [
-        { title: "1. Bölüm: Sille Macerası", time: 180, gridType: 1, question: { q: "Konya'nın tarihi dokusuyla ünlü, Rum ve Türk kültürünün izlerini taşıyan mahallesi?", options: ["A) Sille", "B) İvriz", "C) Çatalhöyük", "D) Lystra"], answer: 0 } },
-        { title: "2. Bölüm: Çatalhöyük Gizemi", time: 300, gridType: 2, question: { q: "Dünyanın en eski yerleşim yerlerinden biri olan neolitik Konya UNESCO alanı?", options: ["A) Alaeddin", "B) Çatalhöyük", "C) Karatay", "D) Aziziye"], answer: 1 } },
-        { title: "3. Bölüm: Selçuklu Başkenti", time: 300, gridType: 3, question: { q: "Alaeddin Tepesi üzerinde bulunan tarihi Selçuklu camisi?", options: ["A) Selimiye", "B) Aziziye", "C) Alaeddin", "D) İplikçi"], answer: 2 } }
-    ];
-
-    function startHexGame() {
-        playClickSound();
-        playerName = document.getElementById("playerName").value.trim();
-        if(!playerName) { alert("Lütfen adınızı girin!"); return; }
-        document.getElementById("screen-start").classList.add("hidden");
-        document.getElementById("screen-game").classList.remove("hidden");
-        loadHexLevel();
-    }
-    function loadHexLevel() {
-        const data = levelsData[currentLevel - 1];
-        timeLeft = data.time;
-        document.getElementById("levelTitle").innerText = data.title;
-        grid = [1,1,1,1,1,1,1,1,1,1];
-        startHexTimer();
-        renderHexBoard();
-    }
-    function startHexTimer() {
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
-            document.getElementById("timer").innerText = `Kalan Süre: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            if(timeLeft <= 0) { clearInterval(timerInterval); gameOverHex("Süreniz bitti!"); }
-            timeLeft--;
-        }, 1000);
-    }
-    function renderHexBoard() {
-        const board = document.getElementById("hexBoard");
-        board.innerHTML = `
-            <div class="hex-row"><div class="hex fixed-target">7</div><div class="hex" onclick="changeCell(0)" id="c0">${grid[0]}</div><div class="hex" onclick="changeCell(1)" id="c1">${grid[1]}</div><div class="hex" onclick="changeCell(2)" id="c2">${grid[2]}</div></div>
-            <div class="hex-row"><div class="hex fixed-target">5</div><div class="hex" onclick="changeCell(3)" id="c3">${grid[3]}</div><div class="hex" onclick="changeCell(4)" id="c4">${grid[4]}</div></div>
-            <div class="hex-row"><div class="hex fixed-target">6</div><div class="hex" onclick="changeCell(5)" id="c5">${grid[5]}</div><div class="hex" onclick="changeCell(6)" id="c6">${grid[6]}</div></div>
-            <div class="hex-row"><div class="hex fixed-target">5</div><div class="hex" onclick="changeCell(7)" id="c7">${grid[7]}</div><div class="hex" onclick="changeCell(8)" id="c8">${grid[8]}</div></div>
-        `;
-        checkLiveHexState();
-    }
-    function changeCell(idx) {
-        playClickSound();
-        grid[idx] = (grid[idx] % 3) + 1;
-        document.getElementById(`c${idx}`).innerText = grid[idx];
-        checkLiveHexState();
-    }
-    function checkLiveHexState() {
-        let s1 = grid[0]+grid[1]+grid[2], s2 = grid[3]+grid[4], s3 = grid[5]+grid[6], s4 = grid[7]+grid[8];
-        toggleHexSolved([0,1,2], s1 === 7);
-        toggleHexSolved([3,4], s2 === 5);
-        toggleHexSolved([5,6], s3 === 6);
-        toggleHexSolved([7,8], s4 === 5);
-    }
-    function toggleHexSolved(indices, condition) {
-        indices.forEach(idx => {
-            const el = document.getElementById(`c${idx}`);
-            if(el) {
-                if(condition) el.classList.add("solved");
-                else el.classList.remove("solved");
-            }
-        });
-    }
-    function checkHexPuzzle() {
-        playClickSound();
-        clearInterval(timerInterval);
-        const container = document.getElementById("game-container");
-        if((grid[0]+grid[1]+grid[2]) === 7 && (grid[3]+grid[4]) === 5 && (grid[5]+grid[6]) === 6 && (grid[7]+grid[8]) === 5) {
-            playCorrectSound();
-            container.classList.add("flash-correct");
-            setTimeout(() => {
-                container.classList.remove("flash-correct");
-                document.getElementById("screen-game").classList.add("hidden");
-                document.getElementById("screen-question").classList.remove("hidden");
-                loadHexQuestion();
-            }, 800);
-        } else {
-            playWrongSound();
-            container.classList.add("flash-wrong");
-            setTimeout(() => {
-                container.classList.remove("flash-wrong");
-                gameOverHex("Hedef toplamlar hatalı!");
-            }, 800);
-        }
-    }
-    function gameOverHex(reason) {
-        document.getElementById("screen-game").classList.add("hidden");
-        document.getElementById("screen-question").classList.add("hidden");
-        document.getElementById("failReason").innerText = reason;
-        document.getElementById("screen-gameover").classList.remove("hidden");
-    }
-    function loadHexQuestion() {
-        const qData = levelsData[currentLevel - 1].question;
-        document.getElementById("questionText").innerText = qData.q;
-        const cont = document.getElementById("optionsContainer");
-        cont.innerHTML = "";
-        qData.options.forEach((opt, idx) => {
-            const btn = document.createElement("button");
-            btn.className = "play-btn";
-            btn.style.width = "100%";
-            btn.innerText = opt;
-            btn.onclick = () => {
-                const container = document.getElementById("game-container");
-                if(idx === qData.answer) {
-                    score += 5;
-                    playCorrectSound();
-                    container.classList.add("flash-correct");
-                    setTimeout(() => container.classList.remove("flash-correct"), 800);
-                } else {
-                    playWrongSound();
-                    container.classList.add("flash-wrong");
-                    setTimeout(() => container.classList.remove("flash-wrong"), 800);
-                }
-                currentLevel++;
-                setTimeout(() => {
-                    if(currentLevel <= 3) {
-                        document.getElementById("screen-question").classList.add("hidden");
-                        document.getElementById("screen-game").classList.remove("hidden");
-                        loadHexLevel();
-                    } else { showHexLeaderboard(); }
-                }, 1000);
-            };
-            cont.appendChild(btn);
-        });
-    }
-    function showHexLeaderboard() {
-        document.getElementById("screen-question").classList.add("hidden");
-        document.getElementById("screen-leaderboard").classList.remove("hidden");
-        let lb = JSON.parse(localStorage.getItem("hex_lb_v28") || "[]");
-        lb.push({ name: playerName, score: score });
-        lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("hex_lb_v28", JSON.stringify(lb));
-        const tbody = document.getElementById("leaderboardBody");
-        tbody.innerHTML = "";
-        lb.forEach((item, index) => {
-            let m = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
-            tbody.innerHTML += `<tr><td><strong>${m}${index+1}.</strong></td><td>${item.name}</td><td>${item.score} Puan</td></tr>`;
-        });
-    }
-
-
-    // --- 2. OYUN: ZEKA LABİRENTİ (WORDLE / KELİME AVI - YEŞİL/SARI/GRİ MANTIĞI) ---
-    const wordQuestions = [
-        { q: "Konya'nın türbesiyle ünlü manevi lideri?", answer: "MEVLANA" },
-        { q: "Sille mahallesinde yaygın olan tarihi çanak çömlek malzemesi?", answer: "SERAMİK" },
-        { q: "Konya'nın simgesi çift başlı kartalın ait olduğu devlet?", answer: "SELÇUK" },
-        { q: "Tarihi İpek Yolu üzerindeki kervansaraylara verilen kısa ad?", answer: "HAN" },
-        { q: "Konya'nın meyvesiyle meşhur ilçesi?", answer: "EREGLI" },
-        { q: "Mevlevi dervişlerinin törende giydiği başlık?", answer: "SIRKE" },
-        { q: "Konya Ovası'nın en önemli tarım ürünü?", answer: "BUGDAY" },
-        { q: "Konya'nın tarihi dokusuyla ünlü mahallesi?", answer: "SİLLE" }
-    ];
-
-    let currentWordIdx = 0;
-    let wordPlayerScore = 0;
-    let wordPlayerName = "";
-    let targetWord = "";
-    let activeRow = 0;
-    let freeHintUsed = false;
-    let tileStatus = [];
-
-    function startWordGameSession() {
-        playClickSound();
-        const nameInput = document.getElementById("wordPlayerName").value.trim();
-        if(!nameInput) { alert("Lütfen adınızı girin!"); return; }
-        wordPlayerName = nameInput;
-        currentWordIdx = 0;
-        wordPlayerScore = 0;
-        document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
-        document.getElementById("word-screen-start").classList.add("hidden");
-        document.getElementById("word-screen-play").classList.remove("hidden");
-        loadWordQuestion();
-    }
-
-    function loadWordQuestion() {
-        const qData = wordQuestions[currentWordIdx];
-        targetWord = qData.answer;
-        activeRow = 0;
-        freeHintUsed = false;
-        tileStatus = Array(targetWord.length).fill(null);
-        
-        document.getElementById("wordQuestionCounter").innerText = `Soru ${currentWordIdx + 1} / 8 (${targetWord.length} Harfli)`;
-        document.getElementById("wordQuestionText").innerText = qData.q;
-        document.getElementById("freeHintBtn").innerText = "💡 Ücretsiz İpucu (1)";
-        document.getElementById("freeHintBtn").disabled = false;
-        document.getElementById("hintMessage").innerText = "";
-        renderWordleBoard();
-    }
-
-    function renderWordleBoard() {
-        const board = document.getElementById("wordleBoard");
-        board.innerHTML = "";
-        for(let r = 0; r < 4; r++) {
-            const rowDiv = document.createElement("div");
-            rowDiv.className = "wordle-row";
-            for(let c = 0; c < targetWord.length; c++) {
-                const tile = document.createElement("div");
-                tile.className = "wordle-tile";
-                tile.id = `tile-${r}-${c}`;
-                if(r === 0 && tileStatus[c]) {
-                    tile.innerText = tileStatus[c];
-                    tile.classList.add("hint-revealed");
-                }
-                rowDiv.appendChild(tile);
-            }
-            board.appendChild(rowDiv);
-        }
-    }
-
-    function pressKey(letter) {
-        playClickSound();
-        let added = false;
-        for(let c = 0; c < targetWord.length; c++) {
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            if(!tile.innerText && !tileStatus[c]) {
-                tile.innerText = letter;
-                added = true;
-                break;
-            }
-        }
-    }
-
-    function deleteWordLetter() {
-        playClickSound();
-        for(let c = targetWord.length - 1; c >= 0; c--) {
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            if(!tile.classList.contains("hint-revealed") && tile.innerText) {
-                tile.innerText = "";
-                break;
-            }
-        }
-    }
-
-    document.addEventListener('keydown', (e) => {
-        const wordGameActive = document.getElementById('word-game-container') && !document.getElementById('word-game-container').classList.contains('hidden');
-        if(!wordGameActive) return;
-
-        const key = e.key.toUpperCase();
-        if(key === 'ENTER') {
-            submitWordGuess();
-        } else if(key === 'BACKSPACE') {
-            deleteWordLetter();
-        } else if(key.length === 1 && ((key >= 'A' && key <= 'Z') || 'İĞÜŞÖÇ'.includes(key))) {
-            pressKey(key);
-        }
-    });
-
-    function useFreeHint() {
-        if(freeHintUsed) return;
-        freeHintUsed = true;
-        document.getElementById("freeHintBtn").disabled = true;
-        document.getElementById("freeHintBtn").innerText = "💡 Ücretsiz İpucu Kullanıldı";
-        revealHintLetter();
-    }
-
-    function usePaidHint() {
-        if(wordPlayerScore < 25) { alert("Puanınız yetersiz!"); return; }
-        wordPlayerScore -= 25;
-        document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
-        revealHintLetter();
-    }
-
-    function revealHintLetter() {
-        playClickSound();
-        let emptyIndices = [];
-        for(let c = 0; c < targetWord.length; c++) {
-            if(!tileStatus[c]) emptyIndices.push(c);
-        }
-        if(emptyIndices.length > 0) {
-            let idxToReveal = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-            let correctLetter = targetWord[idxToReveal];
-            tileStatus[idxToReveal] = correctLetter;
-            renderWordleBoard();
-            document.getElementById("hintMessage").innerText = `İpucu: ${idxToReveal + 1}. harf '${correctLetter}' yerine yerleştirildi!`;
-        }
-    }
-
-    function submitWordGuess() {
-        playClickSound();
-        let currentGuess = "";
-        for(let c = 0; c < targetWord.length; c++) {
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            currentGuess += tile.innerText || "";
-        }
-
-        if(currentGuess.length !== targetWord.length) {
-            alert("Lütfen tüm harfleri doldurun!");
-            return;
-        }
-
-        // Wordle Renklendirme Mantığı (Yeşil / Sarı / Gri)
-        let targetArr = targetWord.split('');
-        let guessArr = currentGuess.split('');
-        let statusArr = Array(targetWord.length).fill('absent');
-
-        // 1. Yeşil Kontrolü (Doğru yerdeki harfler)
-        for(let c = 0; c < targetWord.length; c++) {
-            if(guessArr[c] === targetArr[c]) {
-                statusArr[c] = 'correct';
-                targetArr[c] = null;
-                guessArr[c] = null;
-            }
-        }
-
-        // 2. Sarı Kontrolü (Yanlış yerdeki ama kelimede olan harfler)
-        for(let c = 0; c < targetWord.length; c++) {
-            if(guessArr[c] !== null) {
-                let tIndex = targetArr.indexOf(guessArr[c]);
-                if(tIndex !== -1) {
-                    statusArr[c] = 'present';
-                    targetArr[tIndex] = null;
-                } else {
-                    statusArr[c] = 'absent';
-                }
-            }
-        }
-
-        // Hücrelere sınıfları uygula
-        for(let c = 0; c < targetWord.length; c++) {
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            tile.classList.add(statusArr[c]);
-        }
-
-        if(currentGuess === targetWord) {
-            playCorrectSound();
-            wordPlayerScore += 100; // Her doğru soru tam 100 puan!
-            document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
-            document.getElementById("hintMessage").innerText = "Tebrikler! Doğru kelime (+100 Puan)";
-            
-            setTimeout(() => {
-                currentWordIdx++;
-                if(currentWordIdx < wordQuestions.length) {
-                    loadWordQuestion();
-                } else {
-                    showWordLeaderboard();
-                }
-            }, 1200);
-        } else {
-            playWrongSound();
-            wordPlayerScore = Math.max(0, wordPlayerScore - 30); // Her yanlış -30 puan
-            document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
-            activeRow++;
-            
-            if(activeRow >= 4) {
-                alert(`Bilemediniz! Doğru kelime: ${targetWord}`);
-                activeRow = 0;
-                currentWordIdx++;
-                if(currentWordIdx < wordQuestions.length) {
-                    loadWordQuestion();
-                } else {
-                    showWordLeaderboard();
-                }
-            } else {
-                // Üst satırdaki ipucu harflerini yeni satıra da aktar
-                setTimeout(() => renderWordleBoard(), 400);
-            }
-        }
-    }
-
-    function showWordLeaderboard() {
-        document.getElementById("word-screen-play").classList.add("hidden");
-        document.getElementById("word-screen-finish").classList.remove("hidden");
-        document.getElementById("wordFinalScoreText").innerText = `${wordPlayerName}, Toplam Puanın: ${wordPlayerScore} / 800`;
-
-        let wlb = JSON.parse(localStorage.getItem("word_lb_v28") || "[]");
-        wlb.push({ name: wordPlayerName, score: wordPlayerScore });
-        wlb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("word_lb_v28", JSON.stringify(wlb));
-
-        const tbody = document.getElementById("wordLeaderboardBody");
-        tbody.innerHTML = "";
-        wlb.forEach((item, index) => {
-            let m = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
-            tbody.innerHTML += `<tr><td><strong>${m}${index+1}.</strong></td><td>${item.name}</td><td>${item.score} Puan</td></tr>`;
         });
     }
 </script>
