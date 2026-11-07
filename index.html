@@ -231,7 +231,7 @@
             border-style: dashed;
         }
 
-        /* Oyun İçi Stiller (Hexologic Bulmaca Oyunu) */
+        /* Oyun İçi Stiller */
         .game-container-box {
             max-width: 900px;
             width: 100%;
@@ -243,10 +243,11 @@
             text-align: center;
             border: 1px solid var(--card-border);
             margin: auto;
+            transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
         }
 
-        .container.flash-correct { background: rgba(20, 83, 45, 0.85) !important; border-color: #22c55e !important; }
-        .container.flash-wrong { background: rgba(127, 29, 29, 0.85) !important; border-color: #f43f5e !important; }
+        .game-container-box.flash-correct { background: rgba(20, 83, 45, 0.85) !important; border-color: #22c55e !important; box-shadow: 0 0 50px rgba(34, 197, 94, 0.6) !important; }
+        .game-container-box.flash-wrong { background: rgba(127, 29, 29, 0.85) !important; border-color: #f43f5e !important; box-shadow: 0 0 50px rgba(244, 63, 94, 0.6) !important; }
 
         .version-badge {
             background: linear-gradient(135deg, #10b981, #047857);
@@ -301,6 +302,7 @@
             padding: 16px 20px; border-radius: 14px; cursor: pointer; text-align: left; font-size: 1.05rem; font-weight: 600; transition: 0.2s; 
         }
         .option-btn:hover { background: rgba(71, 85, 105, 0.9); border-color: var(--primary); }
+        .option-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         table { width: 100%; margin-top: 25px; border-collapse: separate; border-spacing: 0 8px; }
         th { padding: 12px; color: #94a3b8; font-size: 0.95rem; text-transform: uppercase; }
@@ -374,11 +376,11 @@
         </div>
     </div>
 
-    <!-- OYUN İÇİ EKRANI (SÜPER GÜÇLENDİRİLMİŞ) -->
+    <!-- OYUN İÇİ EKRANI -->
     <div id="game-container" class="game-container-box hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <button class="play-btn" style="background: #475569; padding: 6px 14px; font-size: 0.85rem;" onclick="returnToPortal()">🏠 Ana Sayfa</button>
-            <div class="version-badge" style="margin:0;">Sürüm V24 - Kusursuz Bulmaca Oyunu</div>
+            <div class="version-badge" style="margin:0;">Sürüm V25 - Kusursuz Bulmaca Oyunu</div>
         </div>
         
         <h1 style="font-size: 1.8rem; background: linear-gradient(to right, #fb7185, #f43f5e); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Tübitak Kırlangıçları</h1>
@@ -436,12 +438,64 @@
 </div>
 
 <script>
+    // Ses Efekti Motoru (Web Audio API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playClickSound() {
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function playCorrectSound() {
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.1);
+        osc.frequency.setValueAtTime(783.99, now + 0.2);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.4);
+    }
+
+    function playWrongSound() {
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.setValueAtTime(164.81, now + 0.15);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.4);
+    }
+
     function openGame() {
+        playClickSound();
         document.getElementById('portal-home').classList.add('hidden');
         document.getElementById('game-container').classList.remove('hidden');
     }
 
     function returnToPortal() {
+        playClickSound();
         document.getElementById('game-container').classList.add('hidden');
         document.getElementById('portal-home').classList.remove('hidden');
         location.reload();
@@ -477,13 +531,14 @@
         });
     }
 
-    // OYUN İÇİ JAVASCRIPT MANTIĞI
+    // OYUN İÇİ MANTIK VE AKIŞ
     let currentLevel = 1;
     let score = 0;
     let timerInterval;
     let timeLeft = 180;
     let playerName = "";
     let grid = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+    let isAnswerLocked = false; // Çift tıkla soru atlama bug'ını önleyen kilit
 
     const levelsData = [
         {
@@ -519,6 +574,7 @@
     ];
 
     function startGame() {
+        playClickSound();
         const nameInput = document.getElementById("playerName").value.trim();
         if(!nameInput) { alert("Lütfen adınızı girin!"); return; }
         playerName = nameInput;
@@ -532,6 +588,7 @@
         timeLeft = data.time;
         document.getElementById("levelTitle").innerText = data.title;
         grid = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+        isAnswerLocked = false;
         startTimer();
         renderHexBoard();
     }
@@ -544,6 +601,7 @@
             document.getElementById("timer").innerText = `Kalan Süre: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             if(timeLeft <= 0) {
                 clearInterval(timerInterval);
+                playWrongSound();
                 gameOver("Süreniz bittiği için elendiniz!");
             }
             timeLeft--;
@@ -581,6 +639,7 @@
     }
 
     function changeCell(idx) {
+        playClickSound();
         grid[idx] = (grid[idx] % 3) + 1;
         document.getElementById(`c${idx}`).innerText = grid[idx];
         checkLiveState();
@@ -617,6 +676,7 @@
     }
 
     function checkPuzzle() {
+        playClickSound();
         clearInterval(timerInterval);
         const data = levelsData[currentLevel - 1];
         const container = document.getElementById("game-container");
@@ -631,6 +691,7 @@
         }
 
         if(isValid) {
+            playCorrectSound();
             container.classList.add("flash-correct");
             setTimeout(() => {
                 container.classList.remove("flash-correct");
@@ -639,6 +700,7 @@
                 loadQuestion();
             }, 800);
         } else {
+            playWrongSound();
             container.classList.add("flash-wrong");
             setTimeout(() => {
                 container.classList.remove("flash-wrong");
@@ -663,22 +725,39 @@
             const btn = document.createElement("button");
             btn.className = "option-btn";
             btn.innerText = opt;
-            btn.onclick = () => { checkAnswer(idx, qData.answer); };
+            btn.onclick = () => checkAnswer(idx, qData.answer, btn);
             optContainer.appendChild(btn);
         });
     }
 
-    function checkAnswer(selected, correct) {
+    function checkAnswer(selected, correct, clickedBtn) {
+        if (isAnswerLocked) return; // Çift tıklamayı engelle
+        isAnswerLocked = true;
+
+        // Tüm şık butonlarını kilitle
+        const allButtons = document.querySelectorAll('.option-btn');
+        allButtons.forEach(b => b.disabled = true);
+
         const container = document.getElementById("game-container");
         if(selected === correct) {
             score += 5;
+            playCorrectSound();
+            clickedButtonColor(clickedBtn, '#22c55e');
             container.classList.add("flash-correct");
             setTimeout(() => { container.classList.remove("flash-correct"); }, 1000);
         } else {
+            playWrongSound();
+            clickedButtonColor(clickedBtn, '#f43f5e');
             container.classList.add("flash-wrong");
             setTimeout(() => { container.classList.remove("flash-wrong"); }, 1000);
         }
-        setTimeout(() => { nextLevelOrFinish(); }, 1000);
+        setTimeout(() => { nextLevelOrFinish(); }, 1200);
+    }
+
+    function clickedButtonColor(btn, color) {
+        btn.style.background = color;
+        btn.style.color = "#fff";
+        btn.style.borderColor = color;
     }
 
     function nextLevelOrFinish() {
@@ -696,10 +775,10 @@
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
         
-        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v24") || "[]");
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v25") || "[]");
         lb.push({ name: playerName, score: score });
         lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("tubitak_lb_v24", JSON.stringify(lb));
+        localStorage.setItem("tubitak_lb_v25", JSON.stringify(lb));
 
         const tbody = document.getElementById("leaderboardBody");
         tbody.innerHTML = "";
