@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tübitak Kırlangıçları - Oyun Portalı</title>
+    <title>Tübitak Kırlangıçları</title>
     <style>
         :root {
             --primary: #f43f5e;
@@ -24,7 +24,8 @@
 
         body { 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background: radial-gradient(circle at top left, #2e1065, #0f172a 60%), radial-gradient(circle at bottom right, #4c1d95, #0f172a);
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #311042 70%, #0f172a 100%);
+            background-attachment: fixed;
             color: #f8fafc; 
             padding: 20px; 
             display: flex; 
@@ -157,20 +158,6 @@
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
         }
 
-        .category-tag {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            background: rgba(56, 189, 248, 0.2);
-            color: var(--accent);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            padding: 4px 10px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
         .game-info {
             padding: 20px;
             display: flex;
@@ -233,7 +220,7 @@
     <header>
         <div class="header-top">
             <div class="logo-area">
-                <h1>Tübitak Kırlangıçları Portal</h1>
+                <h1>Tübitak Kırlangıçları</h1>
                 <p>Eğitici Zeka Bulmacaları ve Tarih İstasyonu</p>
             </div>
             <div class="search-box">
@@ -243,21 +230,18 @@
         <div class="categories">
             <button class="cat-btn active" onclick="filterCategory('all', this)">Tümü</button>
             <button class="cat-btn" onclick="filterCategory('tubitak', this)">TÜBİTAK Projeleri</button>
-            <button class="cat-btn" onclick="filterCategory('history', this)">Konya & Tarih</button>
-            <button class="cat-btn" onclick="filterCategory('arcade', this)">Zeka & Bulmaca</button>
         </div>
     </header>
 
     <div class="games-grid" id="gamesGrid">
         <!-- 1. Oyun Kartı -->
-        <div class="game-card" data-category="tubitak history arcade">
+        <div class="game-card" data-category="tubitak">
             <div class="game-preview">
-                <span class="category-tag">Tübitak Projesi</span>
                 <div class="game-preview-icon">🧩</div>
             </div>
             <div class="game-info">
                 <div>
-                    <h3 class="game-title">Hexologic & Konya Bulmacası</h3>
+                    <h3 class="game-title">Sayıların Ahengi</h3>
                     <p class="game-desc">Altıgen hücrelere sayıları yerleştir, hedef toplamları tuttur ve Konya kültür sorularını yanıtla!</p>
                 </div>
                 <div class="game-meta">
@@ -268,14 +252,13 @@
         </div>
 
         <!-- 2. Oyun Kartı -->
-        <div class="game-card" data-category="history arcade">
+        <div class="game-card" data-category="tubitak">
             <div class="game-preview" style="background: linear-gradient(135deg, #0284c7, #0f172a);">
-                <span class="category-tag">Yeni Oyun</span>
                 <div class="game-preview-icon">🔤</div>
             </div>
             <div class="game-info">
                 <div>
-                    <h3 class="game-title">Zeka Labirenti: Konya Kelime Avı</h3>
+                    <h3 class="game-title">Zeka Labirenti</h3>
                     <p class="game-desc">Konya kültürü ve tarihi hakkındaki max 7 harfli soruları Wordle tarzı tahmin et, puanları topla!</p>
                 </div>
                 <div class="game-meta">
