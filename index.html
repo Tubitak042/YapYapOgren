@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tübitak Kırlangıçları - Oyun Portalı (SÜRÜM V26)</title>
+    <title>Tübitak Kırlangıçları - Oyun Portalı (SÜRÜM V27)</title>
     <style>
         :root {
             --primary: #f43f5e;
@@ -150,7 +150,6 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .game-preview-icon {
@@ -225,7 +224,6 @@
             transform: scale(1.05);
         }
 
-        /* Ortak Kutu / Oyun İçi Stiller */
         .game-container-box {
             max-width: 900px;
             width: 100%;
@@ -237,11 +235,7 @@
             text-align: center;
             border: 1px solid var(--card-border);
             margin: auto;
-            transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
         }
-
-        .game-container-box.flash-correct { background: rgba(20, 83, 45, 0.85) !important; border-color: #22c55e !important; }
-        .game-container-box.flash-wrong { background: rgba(127, 29, 29, 0.85) !important; border-color: #f43f5e !important; }
 
         .version-badge {
             background: linear-gradient(135deg, #10b981, #047857);
@@ -255,7 +249,6 @@
             text-transform: uppercase;
         }
 
-        /* Kelime Oyunu (Zeka Labirenti) Özel Stilleri */
         .wordle-board {
             display: flex;
             flex-direction: column;
@@ -268,23 +261,23 @@
             gap: 8px;
         }
         .wordle-tile {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             border: 2px solid rgba(255, 255, 255, 0.2);
             background: rgba(15, 23, 42, 0.6);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 800;
             color: white;
             text-transform: uppercase;
-            transition: 0.3s;
         }
         .wordle-tile.correct { background: #22c55e; border-color: #22c55e; }
         .wordle-tile.present { background: #eab308; border-color: #eab308; }
         .wordle-tile.absent { background: #334155; border-color: #334155; }
+        .wordle-tile.hint-revealed { background: #0284c7; border-color: #38bdf8; color: white; }
 
         .keyboard {
             display: flex;
@@ -364,7 +357,6 @@
         </header>
 
         <div class="games-grid" id="gamesGrid">
-            <!-- 1. Oyun: Hexologic Bulmaca -->
             <div class="game-card" data-category="tubitak history arcade">
                 <div class="game-preview">
                     <span class="category-tag">Tübitak Projesi</span>
@@ -382,7 +374,6 @@
                 </div>
             </div>
 
-            <!-- 2. Oyun: Zeka Labirenti - Kelime Oyunu -->
             <div class="game-card" data-category="history arcade">
                 <div class="game-preview" style="background: linear-gradient(135deg, #0284c7, #0f172a);">
                     <span class="category-tag">Yeni Oyun</span>
@@ -391,7 +382,7 @@
                 <div class="game-info">
                     <div>
                         <h3 class="game-title">Zeka Labirenti: Konya Kelime Avı</h3>
-                        <p class="game-desc">Konya kültürü ve tarihi hakkındaki soruları harf harf tahmin et, puanları topla!</p>
+                        <p class="game-desc">Konya kültürü ve tarihi hakkındaki max 7 harfli soruları tahmin et, puanları topla!</p>
                     </div>
                     <div class="game-meta">
                         <span class="author-info">Yapan: Tübitak Kırlangıçları</span>
@@ -447,17 +438,17 @@
         </div>
     </div>
 
-    <!-- ZEKA LABİRENTİ: KELİME OYUNU EKRANI -->
+    <!-- ZEKA LABİRENTİ: KELİME AVI EKRANI -->
     <div id="word-game-container" class="game-container-box hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <button class="play-btn" style="background: #475569; padding: 6px 14px; font-size: 0.85rem;" onclick="returnToPortal()">🏠 Ana Sayfa</button>
             <div class="version-badge" style="margin:0; background: #0284c7;">Zeka Labirenti - Kelime Avı</div>
-            <div id="wordScoreDisplay" style="font-weight: 800; color: var(--warning); font-size: 1.1rem;">Puan: 100</div>
+            <div id="wordScoreDisplay" style="font-weight: 800; color: var(--warning); font-size: 1.1rem;">Puan: 0</div>
         </div>
 
         <div id="word-screen-start">
             <h2 style="color: #38bdf8; margin-bottom: 15px;">Zeka Labirenti Kelime Avına Hoş Geldin!</h2>
-            <p style="color: #94a3b8; margin-bottom: 20px;">Konya tarihi ve kültürü hakkındaki 8 soruyu doğru tahmin et. Her soru 100 puandır!</p>
+            <p style="color: #94a3b8; margin-bottom: 20px;">Konya kültürü ve tarihi hakkındaki 8 soruyu tahmin et. Her doğru soru 100 puandır (Max 800 Puan)!</p>
             <input type="text" id="wordPlayerName" class="input-style" placeholder="Adınız Soyadınız"><br>
             <button class="play-btn" style="padding: 12px 30px; font-size: 1.1rem;" onclick="startWordGameSession()">Macera Başlasın</button>
         </div>
@@ -530,7 +521,6 @@
 </div>
 
 <script>
-    // Ses Efekti Motoru
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playClickSound() {
         if (audioCtx.state === 'suspended') { audioCtx.resume(); }
@@ -570,7 +560,6 @@
         osc.start(now); osc.stop(now + 0.3);
     }
 
-    // Portal Navigasyon
     function openHexGame() {
         playClickSound();
         document.getElementById('portal-home').classList.add('hidden');
@@ -710,26 +699,26 @@
     }
 
 
-    // --- 2. OYUN: ZEKA LABİRENTİ (KELİME AVI) MANTIĞI ---
+    // --- 2. OYUN: ZEKA LABİRENTİ (KELİME AVI - MAX 7 HARF) ---
     const wordQuestions = [
-        { q: "Konya'nın en meşhur etli hamur işi yemeği?", answer: "ETLIEKMEK", length: 9 },
-        { q: "Mevlana'nın türbesinin bulunduğu şehrimiz?", answer: "KONYA", length: 5 },
-        { q: "Konya'da her yıl Aralık ayında yapılan kültürel anma töreni?", answer: "ŞEBİARUS", length: 9 },
+        { q: "Konya'nın türbesiyle ünlü manevi lideri?", answer: "MEVLANA", length: 7 },
+        { q: "Mevlana'nın 'Ne olursan ol gel' diyerek seslendiği felsefe?", answer: "HOSGRI", length: 6 }, // Düzenlendi: 6 harf
         { q: "Sille mahallesinde yaygın olan tarihi çanak çömlek malzemesi?", answer: "SERAMİK", length: 7 },
-        { q: "Konya'nın simgesi olan çift başlı kartal hangi devletin armasıydı?", answer: "SELÇUKLU", length: 8 },
-        { q: "Tarihi İpek Yolu üzerinde bulunan kervansaraylara verilen ad?", answer: "HAN", length: 3 },
-        { q: "Konya'da Alaeddin Tepesi'ndeki tarihi sarayın adı?", answer: "KUBADABAD", length: 9 },
-        { q: "Konya'nın mandalinası ve meyvesiyle ünlü ilçesi?", answer: "EREĞLİ", length: 6 }
+        { q: "Konya'nın simgesi çift başlı kartalın ait olduğu devlet?", answer: "SELÇUK", length: 6 },
+        { q: "Tarihi İpek Yolu üzerindeki kervansaraylara verilen kısa ad?", answer: "HAN", length: 3 },
+        { q: "Konya'nın meyvesiyle meşhur ilçesi?", answer: "EREGLI", length: 6 },
+        { q: "Mevlevi dervişlerinin törende giydiği başlık?", answer: "SIRKE", length: 5 },
+        { q: "Konya Ovası'nın en önemli tarım ürünü?", answer: "BUGDAY", length: 6 }
     ];
 
     let currentWordIdx = 0;
-    let wordPlayerScore = 100;
+    let wordPlayerScore = 0;
     let wordPlayerName = "";
     let targetWord = "";
     let currentGuess = "";
-    let guessRows = [];
+    let activeRow = 0;
     let freeHintUsed = false;
-    let revealedLettersCount = 0;
+    let tileStatus = []; // Her kutucuğun harfi ve ipucu durumu
 
     function startWordGameSession() {
         playClickSound();
@@ -737,7 +726,7 @@
         if(!nameInput) { alert("Lütfen adınızı girin!"); return; }
         wordPlayerName = nameInput;
         currentWordIdx = 0;
-        wordPlayerScore = 800; // 8 soru x 100 puan başlangıç havuzu
+        wordPlayerScore = 0;
         document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
         document.getElementById("word-screen-start").classList.add("hidden");
         document.getElementById("word-screen-play").classList.remove("hidden");
@@ -748,8 +737,10 @@
         const qData = wordQuestions[currentWordIdx];
         targetWord = qData.answer;
         currentGuess = "";
+        activeRow = 0;
         freeHintUsed = false;
-        revealedLettersCount = 0;
+        tileStatus = Array(targetWord.length).fill(null); // İpuçları için takip dizisi
+        
         document.getElementById("wordQuestionCounter").innerText = `Soru ${currentWordIdx + 1} / 8 (${targetWord.length} Harfli)`;
         document.getElementById("wordQuestionText").innerText = qData.q;
         document.getElementById("freeHintBtn").innerText = "💡 Ücretsiz İpucu (1)";
@@ -768,66 +759,146 @@
                 const tile = document.createElement("div");
                 tile.className = "wordle-tile";
                 tile.id = `tile-${r}-${c}`;
+                // Eğer ilk satırda ipucu açılmış harf varsa yerleştir
+                if(r === 0 && tileStatus[c]) {
+                    tile.innerText = tileStatus[c];
+                    tile.classList.add("hint-revealed");
+                }
                 rowDiv.appendChild(tile);
             }
             board.appendChild(rowDiv);
         }
+        // İpucu harfi varsa aktif tahmine işle
+        currentGuess = "";
+        for(let c = 0; c < targetWord.length; c++) {
+            currentGuess += tileStatus[c] || "";
+        }
     }
 
-    let activeRow = 0;
     function pressKey(letter) {
         playClickSound();
+        // İpucu ile dolu olan yerleri atlayarak boş kutucuğa yaz
         if(currentGuess.length < targetWord.length) {
-            currentGuess += letter;
-            updateActiveRowDisplay();
+            for(let c = 0; c < targetWord.length; c++) {
+                if(!tileStatus[c] && !currentGuess[c]) {
+                    // İlk boş pozisyona harfi koy
+                    let guessArr = currentGuess.split('');
+                    guessArr[c] = letter;
+                    // Eksikleri boşlukla doldur
+                    currentGuess = guessArr.join('');
+                    break;
+                }
+            }
+            // Alternatif basit ekleme:
+            if(currentGuess.length < targetWord.length) {
+                // Eğer doğrudan sonuna ekleniyorsa
+                // Gelişmiş kutu güncelleme:
+                let temp = "";
+                let lIdx = 0;
+                for(let c=0; c<targetWord.length; c++) {
+                    if(tileStatus[c]) {
+                        temp += tileStatus[c];
+                    } else if(lIdx < currentGuess.replace(new RegExp(tileStatus.join(''), 'g'), '').length) {
+                        // Basit mantık
+                    }
+                }
+            }
+        }
+        
+        // Daha akıcı harf yerleştirme:
+        let added = false;
+        let guessArr = currentGuess.split('');
+        // Boş olan ilk hücreyi bul ve harfi yaz
+        for(let c = 0; c < targetWord.length; c++) {
+            const tile = document.getElementById(`tile-${activeRow}-${c}`);
+            if(!tile.innerText && !tileStatus[c]) {
+                tile.innerText = letter;
+                added = true;
+                break;
+            }
+        }
+        if(added) {
+            updateGuessStringFromBoard();
         }
     }
 
     function deleteWordLetter() {
         playClickSound();
-        if(currentGuess.length > 0) {
-            currentGuess = currentGuess.slice(0, -1);
-            updateActiveRowDisplay();
+        // Aktif satırdaki yazılabilen son harfi sil (ipucu harflerini silme)
+        for(let c = targetWord.length - 1; c >= 0; c--) {
+            const tile = document.getElementById(`tile-${activeRow}-${c}`);
+            if(!tile.classList.contains("hint-revealed") && tile.innerText) {
+                tile.innerText = "";
+                break;
+            }
+        }
+        updateGuessStringFromBoard();
+    }
+
+    function updateGuessStringFromBoard() {
+        currentGuess = "";
+        for(let c = 0; c < targetWord.length; c++) {
+            const tile = document.getElementById(`tile-${activeRow}-${c}`);
+            currentGuess += tile.innerText || "_";
         }
     }
 
-    function updateActiveRowDisplay() {
-        for(let c = 0; c < targetWord.length; c++) {
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            tile.innerText = currentGuess[c] || "";
+    // FİZİKSEL KLAVYE ENTEGRASYONU
+    document.addEventListener('keydown', (e) => {
+        const wordGameActive = document.getElementById('word-game-container') && !document.getElementById('word-game-container').classList.contains('hidden');
+        if(!wordGameActive) return;
+
+        const key = e.key.toUpperCase();
+        if(key === 'ENTER') {
+            submitWordGuess();
+        } else if(key === 'BACKSPACE') {
+            deleteWordLetter();
+        } else if(key.length === 1 && key >= 'A' && key <= 'Z' || key === 'İ' || key === 'Ğ' || key === 'Ü' || key === 'Ş' || key === 'Ö' || key === 'Ç') {
+            pressKey(key);
         }
-    }
+    });
 
     function useFreeHint() {
         if(freeHintUsed) return;
         freeHintUsed = true;
         document.getElementById("freeHintBtn").disabled = true;
         document.getElementById("freeHintBtn").innerText = "💡 Ücretsiz İpucu Kullanıldı";
-        revealOneLetter();
+        revealHintLetter();
     }
 
     function usePaidHint() {
-        if(wordPlayerScore <= 25) { alert("Puanınız yetersiz!"); return; }
+        if(wordPlayerScore < 25) { alert("Puanınız yetersiz!"); return; }
         wordPlayerScore -= 25;
         document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
-        revealOneLetter();
+        revealHintLetter();
     }
 
-    function revealOneLetter() {
+    function revealHintLetter() {
         playClickSound();
-        if(revealedLettersCount < targetWord.length) {
-            let letterToReveal = targetWord[revealedLettersCount];
-            revealedLettersCount++;
-            document.getElementById("hintMessage").innerText = `İpucu: Kelimenin ${revealedLettersCount}. harfi '${letterToReveal}'`;
+        // Henüz açılmamış rastgele veya sıradaki bir boş harfi bul ve yerine koy
+        let emptyIndices = [];
+        for(let c = 0; c < targetWord.length; c++) {
+            if(!tileStatus[c]) emptyIndices.push(c);
+        }
+        if(emptyIndices.length > 0) {
+            let idxToReveal = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+            let correctLetter = targetWord[idxToReveal];
+            tileStatus[idxToReveal] = correctLetter;
+            
+            // Tabloyu güncelle
+            renderWordleBoard();
+            document.getElementById("hintMessage").innerText = `İpucu: ${idxToReveal + 1}. harf '${correctLetter}' yerine yerleştirildi!`;
         } else {
-            document.getElementById("hintMessage").innerText = `İpucu: Tüm harfler açıldı! Kelime: ${targetWord}`;
+            document.getElementById("hintMessage").innerText = `Tüm harfler zaten açıldı!`;
         }
     }
 
     function submitWordGuess() {
         playClickSound();
-        if(currentGuess.length !== targetWord.length) {
-            alert(`Kelime ${targetWord.length} harfli olmalıdır!`);
+        updateGuessStringFromBoard();
+        
+        if(currentGuess.includes("_") || currentGuess.length !== targetWord.length) {
+            alert(`Lütfen tüm harfleri doldurun!`);
             return;
         }
 
@@ -846,21 +917,24 @@
 
         if(currentGuess === targetWord) {
             playCorrectSound();
+            wordPlayerScore += 100; // Her doğru soru için tam 100 puan!
+            document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
+            document.getElementById("hintMessage").innerText = "Tebrikler! Doğru kelime (+100 Puan)";
+            
             setTimeout(() => {
-                activeRow = 0;
                 currentWordIdx++;
                 if(currentWordIdx < wordQuestions.length) {
                     loadWordQuestion();
                 } else {
                     showWordLeaderboard();
                 }
-            }, 1000);
+            }, 1200);
         } else {
             playWrongSound();
             wordPlayerScore = Math.max(0, wordPlayerScore - 30); // Her yanlış -30 puan
             document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
             activeRow++;
-            currentGuess = "";
+            
             if(activeRow >= 4) {
                 alert(`Bilemediniz! Doğru kelime: ${targetWord}`);
                 activeRow = 0;
@@ -870,6 +944,9 @@
                 } else {
                     showWordLeaderboard();
                 }
+            } else {
+                // Yeni satıra geçerken önceki ipucu harflerini yeni satıra da taşı
+                renderWordleBoard();
             }
         }
     }
@@ -879,10 +956,10 @@
         document.getElementById("word-screen-finish").classList.remove("hidden");
         document.getElementById("wordFinalScoreText").innerText = `${wordPlayerName}, Toplam Puanın: ${wordPlayerScore} / 800`;
 
-        let wlb = JSON.parse(localStorage.getItem("word_lb") || "[]");
+        let wlb = JSON.parse(localStorage.getItem("word_lb_v27") || "[]");
         wlb.push({ name: wordPlayerName, score: wordPlayerScore });
         wlb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("word_lb", JSON.stringify(wlb));
+        localStorage.setItem("word_lb_v27", JSON.stringify(wlb));
 
         const tbody = document.getElementById("wordLeaderboardBody");
         tbody.innerHTML = "";
