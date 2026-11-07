@@ -120,9 +120,9 @@
             text-transform: uppercase;
             transition: 0.3s;
         }
-        .wordle-tile.correct { background: #22c55e !important; border-color: #22c55e !important; }
-        .wordle-tile.present { background: #eab308 !important; border-color: #eab308 !important; }
-        .wordle-tile.absent { background: #334155 !important; border-color: #334155 !important; }
+        .wordle-tile.correct { background: #22c55e !important; border-color: #22c55e !important; color: white !important; }
+        .wordle-tile.present { background: #eab308 !important; border-color: #eab308 !important; color: white !important; }
+        .wordle-tile.absent { background: #334155 !important; border-color: #334155 !important; color: white !important; }
         .wordle-tile.hint-revealed { background: #0284c7 !important; border-color: #38bdf8 !important; color: white !important; }
 
         .keyboard {
@@ -302,6 +302,7 @@
     let activeRow = 0;
     let freeHintUsed = false;
     let tileStatus = [];
+    let boardHistory = []; // Önceki tahminleri saklamak için hafıza dizisi
 
     function startWordGameSession() {
         playClickSound();
@@ -322,6 +323,7 @@
         activeRow = 0;
         freeHintUsed = false;
         tileStatus = Array(targetWord.length).fill(null);
+        boardHistory = []; // Yeni soruda geçmişi sıfırla
         
         document.getElementById("wordQuestionCounter").innerText = `Soru ${currentWordIdx + 1} / 8 (${targetWord.length} Harfli)`;
         document.getElementById("wordQuestionText").innerText = qData.q;
@@ -341,10 +343,18 @@
                 const tile = document.createElement("div");
                 tile.className = "wordle-tile";
                 tile.id = `tile-${r}-${c}`;
-                if(r === 0 && tileStatus[c]) {
+
+                // Eğer bu satır daha önceden oynandıysa (history'de varsa) harf ve renklerini bas
+                if(boardHistory[r] && boardHistory[r][c]) {
+                    tile.innerText = boardHistory[r][c].letter;
+                    tile.classList.add(boardHistory[r][c].status);
+                } 
+                // Eğer ilk satırda ipucu açıldıysa yerleştir
+                else if(r === activeRow && tileStatus[c]) {
                     tile.innerText = tileStatus[c];
                     tile.classList.add("hint-revealed");
                 }
+                
                 rowDiv.appendChild(tile);
             }
             board.appendChild(rowDiv);
@@ -454,9 +464,13 @@
             }
         }
 
+        // Bu satırdaki tahminin sonuçlarını geçmişe (history) kaydet
+        boardHistory[activeRow] = [];
         for(let c = 0; c < targetWord.length; c++) {
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            tile.classList.add(statusArr[c]);
+            boardHistory[activeRow][c] = {
+                letter: currentGuess[c],
+                status: statusArr[c]
+            };
         }
 
         if(currentGuess === targetWord) {
@@ -489,7 +503,7 @@
                     showWordLeaderboard();
                 }
             } else {
-                setTimeout(() => renderWordleBoard(), 400);
+                renderWordleBoard();
             }
         }
     }
