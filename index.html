@@ -38,7 +38,6 @@
             width: 100%;
         }
 
-        /* Üst Header / Navigasyon Alanı */
         header {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
@@ -93,7 +92,6 @@
             outline: none;
         }
 
-        /* Kategori Filtre Butonları */
         .categories {
             display: flex;
             gap: 10px;
@@ -121,7 +119,6 @@
             box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
         }
 
-        /* Oyun Kartları Izgarası (Grid) */
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -229,84 +226,227 @@
             transform: scale(1.05);
         }
 
-        /* Yakında Eklenecek Yeni Oyun Kartı Şablonu */
         .game-card.coming-soon {
             opacity: 0.7;
             border-style: dashed;
         }
 
-        @media(max-width: 768px) {
-            .header-top { flex-direction: column; align-items: stretch; }
-            .search-box { max-width: 100%; }
+        /* Oyun İçi Stiller (Hexologic Bulmaca Oyunu) */
+        .game-container-box {
+            max-width: 900px;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            padding: 35px 30px;
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            text-align: center;
+            border: 1px solid var(--card-border);
+            margin: auto;
         }
+
+        .container.flash-correct { background: rgba(20, 83, 45, 0.85) !important; border-color: #22c55e !important; }
+        .container.flash-wrong { background: rgba(127, 29, 29, 0.85) !important; border-color: #f43f5e !important; }
+
+        .version-badge {
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .timer-box { 
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(250, 204, 21, 0.3);
+            border-radius: 16px;
+            padding: 10px 20px;
+            display: inline-block;
+            font-size: 1.3rem; 
+            color: var(--warning); 
+            margin: 15px 0; 
+            font-weight: 800; 
+        }
+
+        .hex-board { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 25px 0; }
+        .hex-row { display: flex; gap: 10px; justify-content: center; align-items: center; }
+        
+        .hex { 
+            width: 62px; height: 72px; 
+            background: linear-gradient(145deg, #fbcfe8, #f472b6); 
+            position: relative; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.5rem; font-weight: 800; color: #831843; 
+            cursor: pointer; 
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            transition: all 0.25s ease;
+            user-select: none;
+        }
+        .hex:hover { transform: scale(1.08); }
+        .hex.fixed-target { background: linear-gradient(145deg, #f43f5e, #be123c); color: white; font-size: 1.25rem; cursor: default; }
+        .hex.solved { background: linear-gradient(145deg, #4ade80, #16a34a) !important; color: #052e16 !important; }
+
+        .input-style {
+            padding: 14px 20px; font-size: 1.1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.2); 
+            width: 85%; max-width: 320px; margin-bottom: 25px; background: rgba(15, 23, 42, 0.8); color: white; text-align: center; outline: none;
+        }
+
+        .options { display: flex; flex-direction: column; gap: 14px; margin-top: 25px; }
+        .option-btn { 
+            background: rgba(51, 65, 85, 0.6); color: white; border: 1px solid rgba(255,255,255,0.15); 
+            padding: 16px 20px; border-radius: 14px; cursor: pointer; text-align: left; font-size: 1.05rem; font-weight: 600; transition: 0.2s; 
+        }
+        .option-btn:hover { background: rgba(71, 85, 105, 0.9); border-color: var(--primary); }
+
+        table { width: 100%; margin-top: 25px; border-collapse: separate; border-spacing: 0 8px; }
+        th { padding: 12px; color: #94a3b8; font-size: 0.95rem; text-transform: uppercase; }
+        td { padding: 14px; background: rgba(15, 23, 42, 0.5); text-align: center; font-weight: 600; }
+        td:first-child { border-radius: 12px 0 0 12px; }
+        td:last-child { border-radius: 0 12px 12px 0; }
+        tr:nth-child(1) td { background: rgba(234, 179, 8, 0.15); color: #facc15; }
+        tr:nth-child(2) td { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
+        tr:nth-child(3) td { background: rgba(180, 83, 9, 0.15); color: #f97316; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
-    <!-- Üst Başlık ve Kategoriler -->
-    <header>
-        <div class="header-top">
-            <div class="logo-area">
-                <h1>Tübitak Kırlangıçları Portal</h1>
-                <p>Eğitici Zeka Bulmacaları ve Tarih İstasyonu</p>
+    <!-- PORTAL ANASAYFA EKRANI -->
+    <div id="portal-home">
+        <header>
+            <div class="header-top">
+                <div class="logo-area">
+                    <h1>Tübitak Kırlangıçları Portal</h1>
+                    <p>Eğitici Zeka Bulmacaları ve Tarih İstasyonu</p>
+                </div>
+                <div class="search-box">
+                    <input type="text" placeholder="Oyun ara..." id="searchInput" onkeyup="filterGames()">
+                </div>
             </div>
-            <div class="search-box">
-                <input type="text" placeholder="Oyun ara (Örn: Sille, Konya)..." id="searchInput" onkeyup="filterGames()">
+            <div class="categories">
+                <button class="cat-btn active" onclick="filterCategory('all', this)">Tümü</button>
+                <button class="cat-btn" onclick="filterCategory('tubitak', this)">TÜBİTAK Projeleri</button>
+                <button class="cat-btn" onclick="filterCategory('history', this)">Konya & Tarih</button>
+                <button class="cat-btn" onclick="filterCategory('arcade', this)">Zeka & Bulmaca</button>
             </div>
-        </div>
-        <div class="categories">
-            <button class="cat-btn active" onclick="filterCategory('all', this)">Tümü</button>
-            <button class="cat-btn" onclick="filterCategory('tubitak', this)">TÜBİTAK Projeleri</button>
-            <button class="cat-btn" onclick="filterCategory('history', this)">Konya & Tarih</button>
-            <button class="cat-btn" onclick="filterCategory('arcade', this)">Zeka & Bulmaca</button>
-        </div>
-    </header>
+        </header>
 
-    <!-- Oyunların Listelendiği Alan (Wordwall Tarzı) -->
-    <div class="games-grid" id="gamesGrid">
+        <div class="games-grid" id="gamesGrid">
+            <div class="game-card" data-category="tubitak history arcade">
+                <div class="game-preview">
+                    <span class="category-tag">Tübitak Projesi</span>
+                    <div class="game-preview-icon">🧩</div>
+                </div>
+                <div class="game-info">
+                    <div>
+                        <h3 class="game-title">Hexologic & Konya Bulmacası</h3>
+                        <p class="game-desc">Altıgen hücrelere sayıları yerleştir, hedef toplamları tuttur ve Konya kültür sorularını yanıtla!</p>
+                    </div>
+                    <div class="game-meta">
+                        <span class="author-info">Yapan: Tübitak Kırlangıçları</span>
+                        <button class="play-btn" onclick="openGame()">Oyunu Oyna</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-card coming-soon" data-category="history">
+                <div class="game-preview">
+                    <span class="category-tag">Yakında</span>
+                    <div class="game-preview-icon">🏛️</div>
+                </div>
+                <div class="game-info">
+                    <div>
+                        <h3 class="game-title">Konya Tarihi Bilgi Yarışması</h3>
+                        <p class="game-desc">Selçuklu eserlerini ve tarihi mekanları keşfetmeye hazır ol. Çok yakında yayında!</p>
+                    </div>
+                    <div class="game-meta">
+                        <span class="author-info">Yapan: Tübitak Ekibi</span>
+                        <button class="play-btn" style="background: #475569; cursor: not-allowed;" disabled>Pek Yakında</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OYUN İÇİ EKRANI (SÜPER GÜÇLENDİRİLMİŞ) -->
+    <div id="game-container" class="game-container-box hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <button class="play-btn" style="background: #475569; padding: 6px 14px; font-size: 0.85rem;" onclick="returnToPortal()">🏠 Ana Sayfa</button>
+            <div class="version-badge" style="margin:0;">Sürüm V24 - Kusursuz Bulmaca Oyunu</div>
+        </div>
         
-        <!-- 1. Oyun Kartı: Mevcut Bulmaca Oyunumuz -->
-        <div class="game-card" data-category="tubitak history arcade">
-            <div class="game-preview">
-                <span class="category-tag">Tübitak Projesi</span>
-                <div class="game-preview-icon">🧩</div>
-            </div>
-            <div class="game-info">
-                <div>
-                    <h3 class="game-title">Hexologic & Konya Bulmacası</h3>
-                    <p class="game-desc">Altıgen hücrelere sayıları yerleştir, hedef toplamları tuttur ve Konya kültür sorularını yanıtla!</p>
-                </div>
-                <div class="game-meta">
-                    <span class="author-info">Yapan: Tübitak Kırlangıçları</span>
-                    <a href="oyun.html" class="play-btn" onclick="launchGame()">Oyunu Oyna</a>
-                </div>
-            </div>
+        <h1 style="font-size: 1.8rem; background: linear-gradient(to right, #fb7185, #f43f5e); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Tübitak Kırlangıçları</h1>
+        <p style="color: #94a3b8; font-size: 0.9rem;">TÜBİTAK Proje Bulmaca İstasyonu</p>
+
+        <!-- Giriş Ekranı -->
+        <div id="screen-start">
+            <p style="margin: 25px 0 15px 0; font-size: 1.1rem;">Yarışmaya başlamak için adını ve soyadını gir:</p>
+            <input type="text" id="playerName" class="input-style" placeholder="Adınız Soyadınız"><br>
+            <button class="play-btn" style="padding: 12px 30px; font-size: 1.1rem;" onclick="startGame()">Oyunu Başlat</button>
         </div>
 
-        <!-- 2. Oyun Kartı: İleride Yapacağın Yeni Oyun İçin Hazır Şablon -->
-        <div class="game-card coming-soon" data-category="history">
-            <div class="game-preview">
-                <span class="category-tag">Yakında</span>
-                <div class="game-preview-icon">🏛️</div>
-            </div>
-            <div class="game-info">
-                <div>
-                    <h3 class="game-title">Konya Tarihi Bilgi Yarışması</h3>
-                    <p class="game-desc">Selçuklu eserlerini ve tarihi mekanları keşfetmeye hazır ol. Çok yakında yayında!</p>
-                </div>
-                <div class="game-meta">
-                    <span class="author-info">Yapan: Tübitak Ekibi</span>
-                    <button class="play-btn" style="background: #475569; cursor: not-allowed;" disabled>Pek Yakında</button>
-                </div>
-            </div>
+        <!-- Oyun Ekranı -->
+        <div id="screen-game" class="hidden">
+            <h3 id="levelTitle" style="color: var(--accent); font-size: 1.2rem;">1. Bölüm</h3>
+            <div class="timer-box" id="timer">Kalan Süre: 03:00</div>
+            <p style="font-size: 0.9rem; color: #cbd5e1; margin-top: 5px;">Hücrelere tıklayarak (1-3) sayıları yerleştir. Karşısındaki kırmızı hedef sayıya ulaşan satırlar yeşil yanacaktır!</p>
+            
+            <div class="hex-board" id="hexBoard"></div>
+            
+            <button class="play-btn" style="padding: 12px 30px; font-size: 1.1rem;" onclick="checkPuzzle()">Bölümü Tamamla</button>
         </div>
 
+        <!-- Soru Ekranı -->
+        <div id="screen-question" class="hidden">
+            <h3 style="color: var(--warning); font-size: 1.3rem;">Konya Kültür & Tarih Sorusu (+5 Puan)</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px;">(Doğru cevap +5 puan kazandırır. Maksimum skor 15 puandır.)</p>
+            <p id="questionText" style="font-size: 1.1rem; margin: 20px 0; font-weight: 600; color: #f8fafc;"></p>
+            <div class="options" id="optionsContainer"></div>
+        </div>
+
+        <!-- Elenme Ekranı -->
+        <div id="screen-gameover" class="hidden">
+            <h2 style="color: var(--primary); font-size: 1.6rem; margin-bottom: 10px;">Oyun Bitti - Elendiniz!</h2>
+            <p id="failReason" style="font-size: 1.05rem; margin: 15px 0; color: #cbd5e1;"></p>
+            <button class="play-btn" style="padding: 10px 25px;" onclick="location.reload()">Tekrar Dene</button>
+        </div>
+
+        <!-- Liderlik Tablosu -->
+        <div id="screen-leaderboard" class="hidden">
+            <h2 style="color: #f8fafc; font-size: 1.5rem;">🏆 TÜBİTAK Liderlik Sıralaması</h2>
+            <p style="font-size:0.85rem; color:#94a3b8;">(En yüksek puan alan başarılı yarışmacılar)</p>
+            <table>
+                <thead>
+                    <tr><th>Sıra</th><th>İsim</th><th>Toplam Puan</th></tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <tr><td colspan="3" style="color:#cbd5e1;">Sıralama yükleniyor...</td></tr>
+                </tbody>
+            </table>
+            <br>
+            <button class="play-btn" style="padding: 10px 25px;" onclick="returnToPortal()">Ana Sayfaya Dön</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // Kategori Filtreleme Fonksiyonu
+    function openGame() {
+        document.getElementById('portal-home').classList.add('hidden');
+        document.getElementById('game-container').classList.remove('hidden');
+    }
+
+    function returnToPortal() {
+        document.getElementById('game-container').classList.add('hidden');
+        document.getElementById('portal-home').classList.remove('hidden');
+        location.reload();
+    }
+
     function filterCategory(category, btnElement) {
         document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
@@ -322,7 +462,6 @@
         });
     }
 
-    // Arama Çubuğu Fonksiyonu
     function filterGames() {
         const query = document.getElementById('searchInput').value.toLowerCase();
         const cards = document.querySelectorAll('.game-card');
@@ -338,9 +477,236 @@
         });
     }
 
-    function launchGame() {
-        // İleride oyunları ayrı dosyalara böldüğünde burayı güncelleyebilirsin.
-        // Şu anki tek dosyalık sistemi açmak için buraya işlemler ekleyebilirsin.
+    // OYUN İÇİ JAVASCRIPT MANTIĞI
+    let currentLevel = 1;
+    let score = 0;
+    let timerInterval;
+    let timeLeft = 180;
+    let playerName = "";
+    let grid = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+
+    const levelsData = [
+        {
+            title: "1. Bölüm: Sille Macerası (3 Dk - Zor)",
+            time: 180,
+            gridType: 1,
+            question: {
+                q: "Konya'nın tarihi dokusuyla ünlü, Rum ve Türk kültürünün izlerini taşıyan tarihi mahallesi / sit alanı hangisidir?",
+                options: ["A) Sille", "B) İvriz", "C) Çatalhöyük", "D) Lystra"],
+                answer: 0
+            }
+        },
+        {
+            title: "2. Bölüm: Çatalhöyük Gizemi (5 Dk - Zor)",
+            time: 300,
+            gridType: 2,
+            question: {
+                q: "Dünyanın en eski yerleşim yerlerinden biri olan ve neolitik döneme ev sahipliği yapan Konya'daki UNESCO miras alanı neresidir?",
+                options: ["A) Alaeddin Tepesi", "B) Çatalhöyük", "C) Karatay Medresesi", "D) Aziziye Camii"],
+                answer: 1
+            }
+        },
+        {
+            title: "3. Bölüm: Selçuklu Başkenti (5 Dk - Usta)",
+            time: 300,
+            gridType: 3,
+            question: {
+                q: "Selçuklu Devleti'ne başkentlik yapmış Konya'da, Alaeddin Tepesi üzerinde bulunan tarihi caminin adı nedir?",
+                options: ["A) Selimiye Camii", "B) Aziziye Camii", "C) Alaeddin Camii", "D) İplikçi Camii"],
+                answer: 2
+            }
+        }
+    ];
+
+    function startGame() {
+        const nameInput = document.getElementById("playerName").value.trim();
+        if(!nameInput) { alert("Lütfen adınızı girin!"); return; }
+        playerName = nameInput;
+        document.getElementById("screen-start").classList.add("hidden");
+        document.getElementById("screen-game").classList.remove("hidden");
+        loadLevel();
+    }
+
+    function loadLevel() {
+        const data = levelsData[currentLevel - 1];
+        timeLeft = data.time;
+        document.getElementById("levelTitle").innerText = data.title;
+        grid = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+        startTimer();
+        renderHexBoard();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            document.getElementById("timer").innerText = `Kalan Süre: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                gameOver("Süreniz bittiği için elendiniz!");
+            }
+            timeLeft--;
+        }, 1000);
+    }
+
+    function renderHexBoard() {
+        const board = document.getElementById("hexBoard");
+        board.innerHTML = "";
+        const data = levelsData[currentLevel - 1];
+
+        if(data.gridType === 1) {
+            board.innerHTML = `
+                <div class="hex-row"><div class="hex fixed-target">7</div><div class="hex" onclick="changeCell(0)" id="c0">${grid[0]}</div><div class="hex" onclick="changeCell(1)" id="c1">${grid[1]}</div><div class="hex" onclick="changeCell(2)" id="c2">${grid[2]}</div></div>
+                <div class="hex-row"><div class="hex fixed-target">5</div><div class="hex" onclick="changeCell(3)" id="c3">${grid[3]}</div><div class="hex" onclick="changeCell(4)" id="c4">${grid[4]}</div></div>
+                <div class="hex-row"><div class="hex fixed-target">6</div><div class="hex" onclick="changeCell(5)" id="c5">${grid[5]}</div><div class="hex" onclick="changeCell(6)" id="c6">${grid[6]}</div></div>
+                <div class="hex-row"><div class="hex fixed-target">5</div><div class="hex" onclick="changeCell(7)" id="c7">${grid[7]}</div><div class="hex" onclick="changeCell(8)" id="c8">${grid[8]}</div></div>
+            `;
+        } else if(data.gridType === 2) {
+            board.innerHTML = `
+                <div class="hex-row"><div class="hex fixed-target">10</div><div class="hex" onclick="changeCell(0)" id="c0">${grid[0]}</div><div class="hex" onclick="changeCell(1)" id="c1">${grid[1]}</div><div class="hex" onclick="changeCell(2)" id="c2">${grid[2]}</div><div class="hex" onclick="changeCell(3)" id="c3">${grid[3]}</div></div>
+                <div class="hex-row"><div class="hex fixed-target">5</div><div class="hex" onclick="changeCell(4)" id="c4">${grid[4]}</div><div class="hex" onclick="changeCell(5)" id="c5">${grid[5]}</div></div>
+                <div class="hex-row"><div class="hex fixed-target">6</div><div class="hex" onclick="changeCell(6)" id="c6">${grid[6]}</div><div class="hex" onclick="changeCell(7)" id="c7">${grid[7]}</div></div>
+                <div class="hex-row"><div class="hex fixed-target">5</div><div class="hex" onclick="changeCell(8)" id="c8">${grid[8]}</div><div class="hex" onclick="changeCell(9)" id="c9">${grid[9]}</div></div>
+            `;
+        } else {
+            board.innerHTML = `
+                <div class="hex-row"><div class="hex fixed-target">11</div><div class="hex" onclick="changeCell(0)" id="c0">${grid[0]}</div><div class="hex" onclick="changeCell(1)" id="c1">${grid[1]}</div><div class="hex" onclick="changeCell(2)" id="c2">${grid[2]}</div><div class="hex" onclick="changeCell(3)" id="c3">${grid[3]}</div></div>
+                <div class="hex-row"><div class="hex fixed-target">8</div><div class="hex" onclick="changeCell(4)" id="c4">${grid[4]}</div><div class="hex" onclick="changeCell(5)" id="c5">${grid[5]}</div><div class="hex" onclick="changeCell(6)" id="c6">${grid[6]}</div></div>
+                <div class="hex-row"><div class="hex fixed-target">5</div><div class="hex" onclick="changeCell(7)" id="c7">${grid[7]}</div><div class="hex" onclick="changeCell(8)" id="c8">${grid[8]}</div></div>
+                <div class="hex-row"><div class="hex fixed-target">3</div><div class="hex" onclick="changeCell(9)" id="c9">${grid[9]}</div></div>
+            `;
+        }
+        checkLiveState();
+    }
+
+    function changeCell(idx) {
+        grid[idx] = (grid[idx] % 3) + 1;
+        document.getElementById(`c${idx}`).innerText = grid[idx];
+        checkLiveState();
+    }
+
+    function checkLiveState() {
+        const data = levelsData[currentLevel - 1];
+        if(data.gridType === 1) {
+            toggleSolved([0,1,2], (grid[0]+grid[1]+grid[2]) === 7);
+            toggleSolved([3,4], (grid[3]+grid[4]) === 5);
+            toggleSolved([5,6], (grid[5]+grid[6]) === 6);
+            toggleSolved([7,8], (grid[7]+grid[8]) === 5);
+        } else if(data.gridType === 2) {
+            toggleSolved([0,1,2,3], (grid[0]+grid[1]+grid[2]+grid[3]) === 10);
+            toggleSolved([4,5], (grid[4]+grid[5]) === 5);
+            toggleSolved([6,7], (grid[6]+grid[7]) === 6);
+            toggleSolved([8,9], (grid[8]+grid[9]) === 5);
+        } else if(data.gridType === 3) {
+            toggleSolved([0,1,2,3], (grid[0]+grid[1]+grid[2]+grid[3]) === 11);
+            toggleSolved([4,5,6], (grid[4]+grid[5]+grid[6]) === 8);
+            toggleSolved([7,8], (grid[7]+grid[8]) === 5);
+            toggleSolved([9], grid[9] === 3);
+        }
+    }
+
+    function toggleSolved(indices, condition) {
+        indices.forEach(idx => {
+            const el = document.getElementById(`c${idx}`);
+            if(el) {
+                if(condition) el.classList.add("solved");
+                else el.classList.remove("solved");
+            }
+        });
+    }
+
+    function checkPuzzle() {
+        clearInterval(timerInterval);
+        const data = levelsData[currentLevel - 1];
+        const container = document.getElementById("game-container");
+        let isValid = false;
+
+        if(data.gridType === 1) {
+            if((grid[0]+grid[1]+grid[2]) === 7 && (grid[3]+grid[4]) === 5 && (grid[5]+grid[6]) === 6 && (grid[7]+grid[8]) === 5) isValid = true;
+        } else if(data.gridType === 2) {
+            if((grid[0]+grid[1]+grid[2]+grid[3]) === 10 && (grid[4]+grid[5]) === 5 && (grid[6]+grid[7]) === 6 && (grid[8]+grid[9]) === 5) isValid = true;
+        } else if(data.gridType === 3) {
+            if((grid[0]+grid[1]+grid[2]+grid[3]) === 11 && (grid[4]+grid[5]+grid[6]) === 8 && (grid[7]+grid[8]) === 5 && grid[9] === 3) isValid = true;
+        }
+
+        if(isValid) {
+            container.classList.add("flash-correct");
+            setTimeout(() => {
+                container.classList.remove("flash-correct");
+                document.getElementById("screen-game").classList.add("hidden");
+                document.getElementById("screen-question").classList.remove("hidden");
+                loadQuestion();
+            }, 800);
+        } else {
+            container.classList.add("flash-wrong");
+            setTimeout(() => {
+                container.classList.remove("flash-wrong");
+                gameOver("Bulmaca yanlış çözüldü! Kırmızı kutulardaki hedef toplamlar hatasız tutmalıdır. Elendiniz!");
+            }, 800);
+        }
+    }
+
+    function gameOver(reason) {
+        document.getElementById("screen-game").classList.add("hidden");
+        document.getElementById("screen-question").classList.add("hidden");
+        document.getElementById("failReason").innerText = reason;
+        document.getElementById("screen-gameover").classList.remove("hidden");
+    }
+
+    function loadQuestion() {
+        const qData = levelsData[currentLevel - 1].question;
+        document.getElementById("questionText").innerText = qData.q;
+        const optContainer = document.getElementById("optionsContainer");
+        optContainer.innerHTML = "";
+        qData.options.forEach((opt, idx) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt;
+            btn.onclick = () => { checkAnswer(idx, qData.answer); };
+            optContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct) {
+        const container = document.getElementById("game-container");
+        if(selected === correct) {
+            score += 5;
+            container.classList.add("flash-correct");
+            setTimeout(() => { container.classList.remove("flash-correct"); }, 1000);
+        } else {
+            container.classList.add("flash-wrong");
+            setTimeout(() => { container.classList.remove("flash-wrong"); }, 1000);
+        }
+        setTimeout(() => { nextLevelOrFinish(); }, 1000);
+    }
+
+    function nextLevelOrFinish() {
+        currentLevel++;
+        if(currentLevel <= 3) {
+            document.getElementById("screen-question").classList.add("hidden");
+            document.getElementById("screen-game").classList.remove("hidden");
+            loadLevel();
+        } else {
+            showLeaderboard();
+        }
+    }
+
+    function showLeaderboard() {
+        document.getElementById("screen-question").classList.add("hidden");
+        document.getElementById("screen-leaderboard").classList.remove("hidden");
+        
+        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v24") || "[]");
+        lb.push({ name: playerName, score: score });
+        lb.sort((a,b) => b.score - a.score);
+        localStorage.setItem("tubitak_lb_v24", JSON.stringify(lb));
+
+        const tbody = document.getElementById("leaderboardBody");
+        tbody.innerHTML = "";
+        lb.forEach((item, index) => {
+            let medal = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
+            tbody.innerHTML += `<tr><td><strong>${medal}${index + 1}.</strong></td><td>${item.name}</td><td>${item.score} / 15 Puan</td></tr>`;
+        });
     }
 </script>
 
