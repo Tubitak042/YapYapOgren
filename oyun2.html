@@ -94,7 +94,7 @@
             outline: none;
         }
 
-        /* 3D Flip Animasyonlu Wordle Kutucukları */
+        /* 3D Flip Efekti (Harfin ters dönmesini engelleyen düzeltilmiş versiyon) */
         .wordle-board {
             display: flex;
             flex-direction: column;
@@ -123,9 +123,18 @@
             transform-style: preserve-3d;
             transition: transform 0.6s ease, background 0.3s ease, border-color 0.3s ease;
         }
+        /* Harfin düz kalması için ters açı veriyoruz */
+        .wordle-tile span {
+            display: inline-block;
+            transition: transform 0.6s ease;
+        }
         .wordle-tile.flip {
             transform: rotateX(180deg);
         }
+        .wordle-tile.flip span {
+            transform: rotateX(180deg);
+        }
+
         .wordle-tile.correct { background: #22c55e !important; border-color: #22c55e !important; color: white !important; }
         .wordle-tile.present { background: #eab308 !important; border-color: #eab308 !important; color: white !important; }
         .wordle-tile.absent { background: #334155 !important; border-color: #334155 !important; color: white !important; }
@@ -251,7 +260,6 @@
 </div>
 
 <script>
-    // Yumuşak Ses Efekti Motoru
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSoftClick() {
         if (audioCtx.state === 'suspended') { audioCtx.resume(); }
@@ -352,13 +360,16 @@
                 tile.className = "wordle-tile";
                 tile.id = `tile-${r}-${c}`;
 
+                const span = document.createElement("span");
+
                 if(boardHistory[r] && boardHistory[r][c]) {
-                    tile.innerText = boardHistory[r][c].letter;
+                    span.innerText = boardHistory[r][c].letter;
                     tile.classList.add(boardHistory[r][c].status);
                 } else if(r === activeRow && tileStatus[c]) {
-                    tile.innerText = tileStatus[c];
+                    span.innerText = tileStatus[c];
                     tile.classList.add("hint-revealed");
                 }
+                tile.appendChild(span);
                 rowDiv.appendChild(tile);
             }
             board.appendChild(rowDiv);
@@ -369,8 +380,15 @@
         playSoftClick();
         for(let c = 0; c < targetWord.length; c++) {
             const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            if(!tile.innerText && !tileStatus[c]) {
-                tile.innerText = letter;
+            const span = tile.querySelector('span');
+            if((!span || !span.innerText) && !tileStatus[c]) {
+                if(!span) {
+                    const s = document.createElement('span');
+                    s.innerText = letter;
+                    tile.appendChild(s);
+                } else {
+                    span.innerText = letter;
+                }
                 break;
             }
         }
@@ -380,8 +398,9 @@
         playSoftClick();
         for(let c = targetWord.length - 1; c >= 0; c--) {
             const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            if(!tile.classList.contains("hint-revealed") && tile.innerText) {
-                tile.innerText = "";
+            const span = tile.querySelector('span');
+            if(!tile.classList.contains("hint-revealed") && span && span.innerText) {
+                span.innerText = "";
                 break;
             }
         }
@@ -436,7 +455,8 @@
         let currentGuess = "";
         for(let c = 0; c < targetWord.length; c++) {
             const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            currentGuess += tile.innerText || "";
+            const span = tile.querySelector('span');
+            currentGuess += (span ? span.innerText : "") || "";
         }
 
         if(currentGuess.length !== targetWord.length) {
@@ -468,7 +488,6 @@
             }
         }
 
-        // 3D Flip Animasyonu ve Geçmişe Kayıt
         boardHistory[activeRow] = [];
         for(let c = 0; c < targetWord.length; c++) {
             boardHistory[activeRow][c] = {
@@ -528,10 +547,10 @@
         document.getElementById("word-screen-finish").classList.remove("hidden");
         document.getElementById("wordFinalScoreText").innerText = `${wordPlayerName}, Toplam Puanın: ${wordPlayerScore} / 800`;
 
-        let wlb = JSON.parse(localStorage.getItem("word_lb_v29") || "[]");
+        let wlb = JSON.parse(localStorage.getItem("word_lb_v30") || "[]");
         wlb.push({ name: wordPlayerName, score: wordPlayerScore });
         wlb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("word_lb_v29", JSON.stringify(wlb));
+        localStorage.setItem("word_lb_v30", JSON.stringify(wlb));
 
         const tbody = document.getElementById("wordLeaderboardBody");
         tbody.innerHTML = "";
