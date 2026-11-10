@@ -1,565 +1,259 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zeka Labirenti: Konya Kelime Avı</title>
-    <style>
-        :root {
-            --primary: #f43f5e;
-            --primary-hover: #e11d48;
-            --accent: #38bdf8;
-            --success: #22c55e;
-            --warning: #facc15;
-            --dark-bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.85);
-            --card-border: rgba(255, 255, 255, 0.15);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body { 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background: radial-gradient(circle at top left, #2e1065, #0f172a 60%), radial-gradient(circle at bottom right, #4c1d95, #0f172a);
-            color: #f8fafc; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh;
-        }
-
-        .wrapper {
-            max-width: 900px;
-            width: 100%;
-        }
-
-        .game-container-box {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            padding: 35px 30px;
-            border-radius: 28px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-            text-align: center;
-            border: 1px solid var(--card-border);
-            margin: auto;
-        }
-
-        .version-badge {
-            background: linear-gradient(135deg, #0284c7, #0369a1);
-            color: #ffffff;
-            font-size: 0.85rem;
-            font-weight: 700;
-            padding: 6px 16px;
-            border-radius: 30px;
-            display: inline-block;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-        }
-
-        .play-btn {
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4);
-            text-decoration: none;
-            font-size: 0.95rem;
-            display: inline-block;
-        }
-
-        .play-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .input-style {
-            padding: 14px 20px; 
-            font-size: 1.1rem; 
-            border-radius: 14px; 
-            border: 1px solid rgba(255,255,255,0.2); 
-            width: 85%; 
-            max-width: 320px; 
-            margin-bottom: 25px; 
-            background: rgba(15, 23, 42, 0.8); 
-            color: white; 
-            text-align: center; 
-            outline: none;
-        }
-
-        /* 3D Flip Efekti (Harfin ters dönmesini engelleyen düzeltilmiş versiyon) */
-        .wordle-board {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            align-items: center;
-            margin: 20px 0;
-            perspective: 1000px;
-        }
-        .wordle-row {
-            display: flex;
-            gap: 8px;
-        }
-        .wordle-tile {
-            width: 48px;
-            height: 48px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: white;
-            text-transform: uppercase;
-            transform-style: preserve-3d;
-            transition: transform 0.6s ease, background 0.3s ease, border-color 0.3s ease;
-        }
-        /* Harfin düz kalması için ters açı veriyoruz */
-        .wordle-tile span {
-            display: inline-block;
-            transition: transform 0.6s ease;
-        }
-        .wordle-tile.flip {
-            transform: rotateX(180deg);
-        }
-        .wordle-tile.flip span {
-            transform: rotateX(180deg);
-        }
-
-        .wordle-tile.correct { background: #22c55e !important; border-color: #22c55e !important; color: white !important; }
-        .wordle-tile.present { background: #eab308 !important; border-color: #eab308 !important; color: white !important; }
-        .wordle-tile.absent { background: #334155 !important; border-color: #334155 !important; color: white !important; }
-        .wordle-tile.hint-revealed { background: #0284c7 !important; border-color: #38bdf8 !important; color: white !important; }
-
-        .keyboard {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            align-items: center;
-            margin-top: 15px;
-        }
-        .kb-row {
-            display: flex;
-            gap: 5px;
-        }
-        .kb-key {
-            background: #334155;
-            color: white;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: 0.1s;
-        }
-        .kb-key:hover { background: #475569; }
-        .kb-key.wide { padding: 10px 18px; background: #475569; }
-
-        table { width: 100%; margin-top: 25px; border-collapse: separate; border-spacing: 0 8px; }
-        th { padding: 12px; color: #94a3b8; font-size: 0.95rem; text-transform: uppercase; }
-        td { padding: 14px; background: rgba(15, 23, 42, 0.5); text-align: center; font-weight: 600; }
-        td:first-child { border-radius: 12px 0 0 12px; }
-        td:last-child { border-radius: 0 12px 12px 0; }
-        tr:nth-child(1) td { background: rgba(234, 179, 8, 0.15); color: #facc15; }
-        tr:nth-child(2) td { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
-        tr:nth-child(3) td { background: rgba(180, 83, 9, 0.15); color: #f97316; }
-
-        .hidden { display: none !important; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zeka Labirenti: Konya Kelime Avı</title>
+<style>
+:root{--bg:#f4efe6;--card:#fff;--ink:#2b2b2b;--mut:#8a8478;--line:#d6cfc0;--acc:#0f766e;--gold:#c9a227;--ok:#3a9d5d;--mid:#d9a521;--no:#7d7a73;--key:#e4ddcf;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17201f;--card:#1f2b2a;--ink:#eee;--mut:#9aa6a4;--line:#3a4a48;--key:#35464a;--no:#4b5655}}
+:root[data-theme="dark"]{--bg:#17201f;--card:#1f2b2a;--ink:#eee;--mut:#9aa6a4;--line:#3a4a48;--key:#35464a;--no:#4b5655}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+header{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:var(--acc);color:#fff;flex-wrap:wrap}
+header a,header button{color:#fff;background:rgba(255,255,255,.2);border:0;text-decoration:none;padding:7px 13px;border-radius:999px;font:600 .9rem inherit;cursor:pointer}
+.sc{font-weight:700}
+main{width:100%;max-width:520px;padding:12px;text-align:center}
+.panel{background:var(--card);border-radius:16px;padding:22px;box-shadow:0 4px 14px rgba(0,0,0,.1)}
+.big{background:var(--gold);color:#fff;border:0;border-radius:12px;padding:12px 26px;font:700 1.05rem inherit;cursor:pointer}
+.hid{display:none!important}
+#q{font-weight:600;margin:6px 0 10px;min-height:3em}
+.sm{color:var(--mut);font-size:.9rem}
+#board{display:grid;gap:6px;justify-content:center;margin:10px 0}
+.row{display:flex;gap:6px;justify-content:center}
+.t{width:52px;height:52px;border:2px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font:800 1.6rem inherit;background:var(--card);transition:border-color .1s}
+.t.f{border-color:var(--mut);animation:pop .12s}
+.t.hint{color:var(--acc);border-style:dashed}
+.t.ok,.t.mid,.t.no{color:#fff;border-color:transparent}
+.t.ok{background:var(--ok)}.t.mid{background:var(--mid)}.t.no{background:var(--no)}
+.t.flip{animation:flip .6s ease both}
+@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+@keyframes pop{50%{transform:scale(1.12)}}
+.row.shake{animation:sh .4s}
+@keyframes sh{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.row.jump .t{animation:jp .5s both}
+@keyframes jp{40%{transform:translateY(-12px)}}
+#kb{display:flex;flex-direction:column;gap:6px;align-items:center;margin-top:8px}
+.kr{display:flex;gap:4px;justify-content:center;width:100%}
+.k{flex:1;max-width:40px;min-width:0;height:48px;border:0;border-radius:6px;background:var(--key);color:var(--ink);font:700 .95rem inherit;cursor:pointer;padding:0}
+.k.w{max-width:62px;font-size:.7rem}
+.k.ok{background:var(--ok);color:#fff}.k.mid{background:var(--mid);color:#fff}.k.no{background:var(--no);color:#fff}
+.hints{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.hints button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:7px 11px;font:600 .85rem inherit;cursor:pointer}
+.hints button:disabled{opacity:.45;cursor:default}
+#msg{min-height:1.4em;font-weight:600;color:var(--acc)}
+table{margin:12px auto;border-collapse:collapse;width:100%}td,th{padding:6px 10px;border-bottom:1px solid var(--line)}
+input{padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:1rem;width:60%}
+@media(max-width:400px){.t{width:44px;height:44px;font-size:1.35rem}.k{height:44px}}
+</style>
 </head>
 <body>
+<header>
+  <a href="index.html">🏠 Ana Sayfa</a>
+  <span>Zeka Labirenti</span>
+  <span class="sc">Puan: <span id="score">0</span></span>
+  <button id="mute" aria-label="Ses">🔊</button>
+</header>
+<main>
+  <section id="intro" class="panel">
+    <h2>Zeka Labirenti Kelime Avına Hoş Geldin!</h2>
+    <p>Konya kültürü ve tarihi hakkındaki 8 soruyu tahmin et. Her soruda 6 hakkın var. Her doğru soru <b>100 puan</b>!</p>
+    <p class="sm">🟩 Doğru harf, doğru yer<br>🟨 Doğru harf, yanlış yer<br>⬜ Cevapta yok</p>
+    <button class="big" id="start">Macera Başlasın</button>
+  </section>
 
-<div class="wrapper">
-    <div id="word-game-container" class="game-container-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <a href="index.html" class="play-btn" style="background: #475569; padding: 6px 14px; font-size: 0.85rem;">🏠 Ana Sayfa</a>
-            <div class="version-badge" style="margin:0;">Zeka Labirenti - Kelime Avı</div>
-            <div id="wordScoreDisplay" style="font-weight: 800; color: var(--warning); font-size: 1.1rem;">Puan: 0</div>
-        </div>
+  <section id="game" class="hid">
+    <div class="sm">Soru <span id="qn">1</span> / 8</div>
+    <div id="q"></div>
+    <div class="hints"><button id="h1">💡 Ücretsiz İpucu (1)</button><button id="h2">💡 İpucu Satın Al (-25 Puan)</button></div>
+    <div id="msg"></div>
+    <div id="board"></div>
+    <div id="kb"></div>
+  </section>
 
-        <div id="word-screen-start">
-            <h2 style="color: #38bdf8; margin-bottom: 15px;">Zeka Labirenti Kelime Avına Hoş Geldin!</h2>
-            <p style="color: #94a3b8; margin-bottom: 20px;">Konya kültürü ve tarihi hakkındaki max 7 harfli 8 soruyu tahmin et. Her doğru soru 100 puandır!</p>
-            <input type="text" id="wordPlayerName" class="input-style" placeholder="Adınız Soyadınız"><br>
-            <button class="play-btn" style="padding: 12px 30px; font-size: 1.1rem;" onclick="startWordGameSession()">Macera Başlasın</button>
-        </div>
-
-        <div id="word-screen-play" class="hidden">
-            <div id="wordQuestionCounter" style="color: #38bdf8; font-weight: 700; margin-bottom: 5px;">Soru 1 / 8</div>
-            <div id="wordQuestionText" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.3); padding: 15px; border-radius: 12px; font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: #f8fafc;">Soru yükleniyor...</div>
-            
-            <div class="wordle-board" id="wordleBoard"></div>
-
-            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                <button class="play-btn" style="background: #eab308; color: #0f172a; padding: 8px 16px; font-size: 0.85rem;" id="freeHintBtn" onclick="useFreeHint()">💡 Ücretsiz İpucu (1)</button>
-                <button class="play-btn" style="background: #d97706; padding: 8px 16px; font-size: 0.85rem;" id="paidHintBtn" onclick="usePaidHint()">💡 İpucu Satın Al (-25 Puan)</button>
-            </div>
-            <p id="hintMessage" style="color: #38bdf8; font-size: 0.9rem; min-height: 24px; font-weight: 600;"></p>
-
-            <div class="keyboard" id="virtualKeyboard">
-                <div class="kb-row">
-                    <button class="kb-key" onclick="pressKey('E')">E</button>
-                    <button class="kb-key" onclick="pressKey('R')">R</button>
-                    <button class="kb-key" onclick="pressKey('T')">T</button>
-                    <button class="kb-key" onclick="pressKey('Y')">Y</button>
-                    <button class="kb-key" onclick="pressKey('U')">U</button>
-                    <button class="kb-key" onclick="pressKey('İ')">İ</button>
-                    <button class="kb-key" onclick="pressKey('O')">O</button>
-                    <button class="kb-key" onclick="pressKey('P')">P</button>
-                    <button class="kb-key" onclick="pressKey('Ğ')">Ğ</button>
-                    <button class="kb-key" onclick="pressKey('Ü')">Ü</button>
-                </div>
-                <div class="kb-row">
-                    <button class="kb-key" onclick="pressKey('A')">A</button>
-                    <button class="kb-key" onclick="pressKey('S')">S</button>
-                    <button class="kb-key" onclick="pressKey('D')">D</button>
-                    <button class="kb-key" onclick="pressKey('F')">F</button>
-                    <button class="kb-key" onclick="pressKey('G')">G</button>
-                    <button class="kb-key" onclick="pressKey('H')">H</button>
-                    <button class="kb-key" onclick="pressKey('J')">J</button>
-                    <button class="kb-key" onclick="pressKey('K')">K</button>
-                    <button class="kb-key" onclick="pressKey('L')">L</button>
-                    <button class="kb-key" onclick="pressKey('Ş')">Ş</button>
-                </div>
-                <div class="kb-row">
-                    <button class="kb-key wide" onclick="submitWordGuess()">GİRİŞ</button>
-                    <button class="kb-key" onclick="pressKey('Z')">Z</button>
-                    <button class="kb-key" onclick="pressKey('C')">C</button>
-                    <button class="kb-key" onclick="pressKey('V')">V</button>
-                    <button class="kb-key" onclick="pressKey('B')">B</button>
-                    <button class="kb-key" onclick="pressKey('N')">N</button>
-                    <button class="kb-key" onclick="pressKey('M')">M</button>
-                    <button class="kb-key" onclick="pressKey('Ö')">Ö</button>
-                    <button class="kb-key" onclick="pressKey('Ç')">Ç</button>
-                    <button class="kb-key wide" onclick="deleteWordLetter()">SİL</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="word-screen-finish" class="hidden">
-            <h2 style="color: #22c55e; font-size: 1.8rem; margin-bottom: 10px;">Zeka Labirentini Tamamladın! 🎉</h2>
-            <p id="wordFinalScoreText" style="font-size: 1.2rem; margin: 20px 0; color: #f8fafc; font-weight: 700;"></p>
-            <table>
-                <thead><tr><th>Sıra</th><th>İsim</th><th>Kelime Avı Puanı</th></tr></thead>
-                <tbody id="wordLeaderboardBody"></tbody>
-            </table>
-            <br>
-            <a href="index.html" class="play-btn" style="padding: 10px 25px; margin-top: 15px; display:inline-block;">Ana Sayfaya Dön</a>
-        </div>
-    </div>
-</div>
+  <section id="end" class="panel hid">
+    <h2>Zeka Labirentini Tamamladın! 🎉</h2>
+    <p>Toplam puanın: <b id="fin"></b></p>
+    <div id="nameBox"><input id="nm" maxlength="16" placeholder="İsmin"> <button class="big" id="save" style="padding:9px 16px">Kaydet</button></div>
+    <table><thead><tr><th>Sıra</th><th>İsim</th><th>Puan</th></tr></thead><tbody id="lb"></tbody></table>
+    <button class="big" id="again">Tekrar Oyna</button>
+    <p><a href="index.html">Ana Sayfaya Dön</a></p>
+  </section>
+</main>
 
 <script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSoftClick() {
-        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-    }
-    function playCorrectSound() {
-        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, now);
-        osc.frequency.setValueAtTime(659.25, now + 0.08);
-        osc.frequency.setValueAtTime(783.99, now + 0.16);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.3);
-    }
-    function playWrongSound() {
-        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(200, now);
-        osc.frequency.setValueAtTime(140, now + 0.1);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(now); osc.stop(now + 0.25);
-    }
+const Q=[
+ ["Mevlana Müzesi'nin ünlü kubbesi hangi renktir?","YEŞİL"],
+ ["Mevlana'nın izinden gidenlerin kurduğu tarikatın adı nedir?","MEVLEVİ"],
+ ["Mevlevilerin dönerek yaptığı ayinin adı nedir?","SEMA"],
+ ["Mevlana'nın altı ciltlik ünlü eseri hangisidir?","MESNEVİ"],
+ ["Aya Elena Kilisesi, Konya'nın hangi tarihi kasabasındadır?","SİLLE"],
+ ["Çini Eserler Müzesi olarak kullanılan Konya'daki medrese hangisidir?","KARATAY"],
+ ["Konya Ovası, Türkiye'nin hangi ürün ambarı olarak bilinir?","TAHIL"],
+ ["Mevlevi dervişlerinin başlarına giydiği uzun, koni biçimli başlığın adı nedir?","SİKKE"]
+];
+const ROWS=["QWERTYUIOPĞÜ","ASDFGHJKLŞİ","⏎ZXCVBNMÖÇ⌫"];
+const MAX=6;
+const $=id=>document.getElementById(id);
+const up=s=>s.toLocaleUpperCase("tr-TR");
+let qi,score,word,row,cur,done,lock,hintUsed,paid,keyState,muted=false;
 
-    const wordQuestions = [
-        { q: "Konya'nın türbesiyle ünlü manevi lideri?", answer: "MEVLANA" },
-        { q: "Sille mahallesinde yaygın olan tarihi çanak çömlek malzemesi?", answer: "SERAMİK" },
-        { q: "Konya'nın simgesi çift başlı kartalın ait olduğu devlet?", answer: "SELÇUK" },
-        { q: "Tarihi İpek Yolu üzerindeki kervansaraylara verilen kısa ad?", answer: "HAN" },
-        { q: "Konya'nın meyvesiyle meşhur ilçesi?", answer: "EREGLI" },
-        { q: "Mevlevi dervişlerinin törende giydiği başlık?", answer: "SIRKE" },
-        { q: "Konya Ovası'nın en önemli tarım ürünü?", answer: "BUGDAY" },
-        { q: "Konya'nın tarihi dokusuyla ünlü mahallesi?", answer: "SİLLE" }
-    ];
+/* ---------- Ses ---------- */
+let ac=null;
+function tone(f,t=0,d=.18,v=.07,type="sine"){
+  if(muted)return;
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==="suspended")ac.resume();
+    const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime+t;
+    o.type=type;o.frequency.value=f;
+    g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(v,n+.02);g.gain.exponentialRampToValueAtTime(.0001,n+d);
+    o.connect(g).connect(ac.destination);o.start(n);o.stop(n+d+.05);
+  }catch(e){}
+}
+const S={
+  key:()=>tone(520,0,.06,.04),
+  del:()=>tone(330,0,.07,.04),
+  bad:()=>{tone(180,0,.2,.07,"triangle");tone(150,.1,.25,.06,"triangle")},
+  ok:i=>tone(660+i*60,0,.3,.07),
+  mid:i=>tone(500+i*30,0,.25,.06),
+  no:i=>tone(300,0,.15,.04),
+  win:()=>[523,659,784,1047].forEach((f,i)=>tone(f,i*.12,.4,.07)),
+  lose:()=>[392,330,262].forEach((f,i)=>tone(f,i*.18,.4,.06)),
+  hint:()=>{tone(880,0,.2,.05);tone(1175,.1,.25,.05)}
+};
 
-    let currentWordIdx = 0;
-    let wordPlayerScore = 0;
-    let wordPlayerName = "";
-    let targetWord = "";
-    let activeRow = 0;
-    let freeHintUsed = false;
-    let tileStatus = [];
-    let boardHistory = [];
-
-    function startWordGameSession() {
-        playSoftClick();
-        const nameInput = document.getElementById("wordPlayerName").value.trim();
-        if(!nameInput) { alert("Lütfen adınızı girin!"); return; }
-        wordPlayerName = nameInput;
-        currentWordIdx = 0;
-        wordPlayerScore = 0;
-        document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
-        document.getElementById("word-screen-start").classList.add("hidden");
-        document.getElementById("word-screen-play").classList.remove("hidden");
-        loadWordQuestion();
-    }
-
-    function loadWordQuestion() {
-        const qData = wordQuestions[currentWordIdx];
-        targetWord = qData.answer;
-        activeRow = 0;
-        freeHintUsed = false;
-        tileStatus = Array(targetWord.length).fill(null);
-        boardHistory = [];
-        
-        document.getElementById("wordQuestionCounter").innerText = `Soru ${currentWordIdx + 1} / 8 (${targetWord.length} Harfli)`;
-        document.getElementById("wordQuestionText").innerText = qData.q;
-        document.getElementById("freeHintBtn").innerText = "💡 Ücretsiz İpucu (1)";
-        document.getElementById("freeHintBtn").disabled = false;
-        document.getElementById("hintMessage").innerText = "";
-        renderWordleBoard();
-    }
-
-    function renderWordleBoard() {
-        const board = document.getElementById("wordleBoard");
-        board.innerHTML = "";
-        for(let r = 0; r < 4; r++) {
-            const rowDiv = document.createElement("div");
-            rowDiv.className = "wordle-row";
-            for(let c = 0; c < targetWord.length; c++) {
-                const tile = document.createElement("div");
-                tile.className = "wordle-tile";
-                tile.id = `tile-${r}-${c}`;
-
-                const span = document.createElement("span");
-
-                if(boardHistory[r] && boardHistory[r][c]) {
-                    span.innerText = boardHistory[r][c].letter;
-                    tile.classList.add(boardHistory[r][c].status);
-                } else if(r === activeRow && tileStatus[c]) {
-                    span.innerText = tileStatus[c];
-                    tile.classList.add("hint-revealed");
-                }
-                tile.appendChild(span);
-                rowDiv.appendChild(tile);
-            }
-            board.appendChild(rowDiv);
-        }
-    }
-
-    function pressKey(letter) {
-        playSoftClick();
-        for(let c = 0; c < targetWord.length; c++) {
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            const span = tile.querySelector('span');
-            if((!span || !span.innerText) && !tileStatus[c]) {
-                if(!span) {
-                    const s = document.createElement('span');
-                    s.innerText = letter;
-                    tile.appendChild(s);
-                } else {
-                    span.innerText = letter;
-                }
-                break;
-            }
-        }
-    }
-
-    function deleteWordLetter() {
-        playSoftClick();
-        for(let c = targetWord.length - 1; c >= 0; c--) {
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            const span = tile.querySelector('span');
-            if(!tile.classList.contains("hint-revealed") && span && span.innerText) {
-                span.innerText = "";
-                break;
-            }
-        }
-    }
-
-    document.addEventListener('keydown', (e) => {
-        const wordGameActive = document.getElementById('word-game-container') && !document.getElementById('word-game-container').classList.contains('hidden');
-        if(!wordGameActive) return;
-
-        const key = e.key.toUpperCase();
-        if(key === 'ENTER') {
-            submitWordGuess();
-        } else if(key === 'BACKSPACE') {
-            deleteWordLetter();
-        } else if(key.length === 1 && ((key >= 'A' && key <= 'Z') || 'İĞÜŞÖÇ'.includes(key))) {
-            pressKey(key);
-        }
+/* ---------- Oyun ---------- */
+function build(){
+  const b=$("board");b.innerHTML="";
+  b.style.gridTemplateColumns="1fr";
+  for(let r=0;r<MAX;r++){
+    const d=document.createElement("div");d.className="row";
+    for(let c=0;c<word.length;c++){const t=document.createElement("div");t.className="t";d.appendChild(t)}
+    b.appendChild(d);
+  }
+  const kb=$("kb");kb.innerHTML="";
+  ROWS.forEach(r=>{
+    const d=document.createElement("div");d.className="kr";
+    [...r].forEach(ch=>{
+      const k=document.createElement("button");k.className="k";k.type="button";
+      if(ch==="⏎"){k.textContent="GİRİŞ";k.classList.add("w");k.onclick=submit}
+      else if(ch==="⌫"){k.textContent="SİL";k.classList.add("w");k.onclick=back}
+      else{k.textContent=ch;k.dataset.l=ch;k.onclick=()=>type(ch)}
+      d.appendChild(k);
     });
-
-    function useFreeHint() {
-        if(freeHintUsed) return;
-        freeHintUsed = true;
-        document.getElementById("freeHintBtn").disabled = true;
-        document.getElementById("freeHintBtn").innerText = "💡 Ücretsiz İpucu Kullanıldı";
-        revealHintLetter();
+    kb.appendChild(d);
+  });
+}
+function load(){
+  word=Q[qi][1];row=0;cur="";done=false;lock=false;hintUsed=false;paid=0;keyState={};
+  $("qn").textContent=qi+1;$("q").textContent=Q[qi][0];$("msg").textContent="";
+  $("h1").disabled=false;$("h2").disabled=false;
+  build();
+}
+function tiles(){return $("board").children[row].children}
+function type(ch){
+  if(done||lock||cur.length>=word.length)return;
+  const t=tiles()[cur.length];t.textContent=ch;t.classList.add("f");t.classList.remove("hint");
+  cur+=ch;S.key();
+}
+function back(){
+  if(done||lock||!cur.length)return;
+  cur=[...cur].slice(0,-1).join("");
+  const t=tiles()[cur.length];t.textContent="";t.classList.remove("f");S.del();
+}
+function msg(s){$("msg").textContent=s}
+function submit(){
+  if(done||lock)return;
+  if(cur.length<word.length){
+    const r=$("board").children[row];r.classList.remove("shake");void r.offsetWidth;r.classList.add("shake");
+    S.bad();msg("Yetersiz harf!");return;
+  }
+  msg("");lock=true;
+  const g=[...cur],w=[...word],res=Array(w.length).fill("no"),left={};
+  w.forEach((c,i)=>{if(g[i]===c)res[i]="ok";else left[c]=(left[c]||0)+1});
+  g.forEach((c,i)=>{if(res[i]!=="ok"&&left[c]>0){res[i]="mid";left[c]--}});
+  const ts=tiles(),r=$("board").children[row];
+  g.forEach((c,i)=>{
+    const d=i*300;
+    ts[i].style.animationDelay=d+"ms";ts[i].classList.add("flip");
+    setTimeout(()=>{ts[i].classList.add(res[i]);S[res[i]](i)},d+300);
+    setTimeout(()=>{const p=keyState[c];const rk={no:1,mid:2,ok:3};
+      if(!p||rk[res[i]]>rk[p]){keyState[c]=res[i];const k=document.querySelector('.k[data-l="'+c+'"]');if(k){k.classList.remove("no","mid","ok");k.classList.add(res[i])}}},d+300);
+  });
+  setTimeout(()=>{
+    if(cur===word){
+      done=true;S.win();r.classList.add("jump");
+      score+=100;$("score").textContent=score;msg("Harika! +100 puan 🎉");
+      setTimeout(next,1800);
+    }else{
+      row++;cur="";lock=false;
+      if(row>=MAX){done=true;S.lose();msg("Doğru cevap: "+word);setTimeout(next,2400)}
     }
+  },w.length*300+500);
+}
+function next(){qi++;qi<Q.length?load():finish()}
 
-    function usePaidHint() {
-        if(wordPlayerScore < 25) { alert("Puanınız yetersiz!"); return; }
-        wordPlayerScore -= 25;
-        document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
-        revealHintLetter();
-    }
+/* ---------- İpuçları ---------- */
+function showHint(pos){
+  const t=tiles()[pos];
+  if(t&&!t.textContent){t.textContent=[...word][pos];t.classList.add("hint")}
+}
+$("h1").onclick=()=>{
+  if(done||lock||hintUsed)return;
+  hintUsed=true;$("h1").disabled=true;S.hint();
+  msg("İpucu: ilk harf "+[...word][0]);
+  if(!cur.length)showHint(0);
+};
+$("h2").onclick=()=>{
+  if(done||lock)return;
+  const ts=tiles(),empty=[];
+  [...word].forEach((c,i)=>{if(i>=cur.length&&!ts[i].textContent)empty.push(i)});
+  if(!empty.length||paid>=word.length-2){msg("Daha fazla ipucu yok.");$("h2").disabled=true;return}
+  if(score<25){msg("Yetersiz puan!");S.bad();return}
+  score-=25;paid++;$("score").textContent=score;S.hint();
+  const p=empty[Math.floor(Math.random()*empty.length)];
+  msg((p+1)+". harf: "+[...word][p]+" (-25 puan)");showHint(p);
+};
 
-    function revealHintLetter() {
-        playSoftClick();
-        let emptyIndices = [];
-        for(let c = 0; c < targetWord.length; c++) {
-            if(!tileStatus[c]) emptyIndices.push(c);
-        }
-        if(emptyIndices.length > 0) {
-            let idxToReveal = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-            let correctLetter = targetWord[idxToReveal];
-            tileStatus[idxToReveal] = correctLetter;
-            renderWordleBoard();
-            document.getElementById("hintMessage").innerText = `İpucu: ${idxToReveal + 1}. harf '${correctLetter}' yerine yerleştirildi!`;
-        }
-    }
+/* ---------- Bitiş / skor tablosu ---------- */
+function getLB(){try{return JSON.parse(localStorage.getItem("konyaLB")||"[]")}catch(e){return[]}}
+function setLB(a){try{localStorage.setItem("konyaLB",JSON.stringify(a))}catch(e){}}
+function drawLB(){
+  const tb=$("lb");tb.innerHTML="";
+  getLB().forEach((e,i)=>{
+    const tr=document.createElement("tr");
+    [i+1,e.n,e.s].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.appendChild(td)});
+    tb.appendChild(tr);
+  });
+}
+function finish(){
+  $("game").classList.add("hid");$("end").classList.remove("hid");
+  $("fin").textContent=score;$("nameBox").classList.remove("hid");$("nm").value="";drawLB();S.win();
+}
+$("save").onclick=()=>{
+  const n=$("nm").value.trim()||"Misafir";
+  const a=getLB();a.push({n,s:score});a.sort((x,y)=>y.s-x.s);setLB(a.slice(0,10));
+  $("nameBox").classList.add("hid");drawLB();
+};
+function start(){
+  qi=0;score=0;$("score").textContent=0;
+  $("intro").classList.add("hid");$("end").classList.add("hid");$("game").classList.remove("hid");
+  load();S.hint();
+}
+$("start").onclick=start;$("again").onclick=start;
+$("mute").onclick=()=>{muted=!muted;$("mute").textContent=muted?"🔇":"🔊"};
 
-    function submitWordGuess() {
-        playSoftClick();
-        let currentGuess = "";
-        for(let c = 0; c < targetWord.length; c++) {
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            const span = tile.querySelector('span');
-            currentGuess += (span ? span.innerText : "") || "";
-        }
-
-        if(currentGuess.length !== targetWord.length) {
-            alert("Lütfen tüm harfleri doldurun!");
-            return;
-        }
-
-        let targetArr = targetWord.split('');
-        let guessArr = currentGuess.split('');
-        let statusArr = Array(targetWord.length).fill('absent');
-
-        for(let c = 0; c < targetWord.length; c++) {
-            if(guessArr[c] === targetArr[c]) {
-                statusArr[c] = 'correct';
-                targetArr[c] = null;
-                guessArr[c] = null;
-            }
-        }
-
-        for(let c = 0; c < targetWord.length; c++) {
-            if(guessArr[c] !== null) {
-                let tIndex = targetArr.indexOf(guessArr[c]);
-                if(tIndex !== -1) {
-                    statusArr[c] = 'present';
-                    targetArr[tIndex] = null;
-                } else {
-                    statusArr[c] = 'absent';
-                }
-            }
-        }
-
-        boardHistory[activeRow] = [];
-        for(let c = 0; c < targetWord.length; c++) {
-            boardHistory[activeRow][c] = {
-                letter: currentGuess[c],
-                status: statusArr[c]
-            };
-            const tile = document.getElementById(`tile-${activeRow}-${c}`);
-            if(tile) {
-                setTimeout(() => {
-                    tile.classList.add('flip');
-                    setTimeout(() => {
-                        tile.classList.add(statusArr[c]);
-                    }, 300);
-                }, c * 100);
-            }
-        }
-
-        if(currentGuess === targetWord) {
-            playCorrectSound();
-            wordPlayerScore += 100;
-            document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
-            document.getElementById("hintMessage").innerText = "Tebrikler! Doğru kelime (+100 Puan)";
-            
-            setTimeout(() => {
-                currentWordIdx++;
-                if(currentWordIdx < wordQuestions.length) {
-                    loadWordQuestion();
-                } else {
-                    showWordLeaderboard();
-                }
-            }, 1600);
-        } else {
-            playWrongSound();
-            wordPlayerScore = Math.max(0, wordPlayerScore - 30);
-            document.getElementById("wordScoreDisplay").innerText = `Puan: ${wordPlayerScore}`;
-            activeRow++;
-            
-            setTimeout(() => {
-                if(activeRow >= 4) {
-                    alert(`Bilemediniz! Doğru kelime: ${targetWord}`);
-                    activeRow = 0;
-                    currentWordIdx++;
-                    if(currentWordIdx < wordQuestions.length) {
-                        loadWordQuestion();
-                    } else {
-                        showWordLeaderboard();
-                    }
-                } else {
-                    renderWordleBoard();
-                }
-            }, 800);
-        }
-    }
-
-    function showWordLeaderboard() {
-        document.getElementById("word-screen-play").classList.add("hidden");
-        document.getElementById("word-screen-finish").classList.remove("hidden");
-        document.getElementById("wordFinalScoreText").innerText = `${wordPlayerName}, Toplam Puanın: ${wordPlayerScore} / 800`;
-
-        let wlb = JSON.parse(localStorage.getItem("word_lb_v30") || "[]");
-        wlb.push({ name: wordPlayerName, score: wordPlayerScore });
-        wlb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("word_lb_v30", JSON.stringify(wlb));
-
-        const tbody = document.getElementById("wordLeaderboardBody");
-        tbody.innerHTML = "";
-        wlb.forEach((item, index) => {
-            let m = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
-            tbody.innerHTML += `<tr><td><strong>${m}${index+1}.</strong></td><td>${item.name}</td><td>${item.score} Puan</td></tr>`;
-        });
-    }
+/* Fiziksel klavye (Türkçe harf desteğiyle) */
+document.addEventListener("keydown",e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey||$("game").classList.contains("hid"))return;
+  if(e.key==="Enter"){e.preventDefault();submit();return}
+  if(e.key==="Backspace"){back();return}
+  if(e.key.length===1){
+    const ch=up(e.key);
+    if(/^[A-ZÇĞİÖŞÜ]$/.test(ch))type(ch);
+  }
+});
 </script>
-
 </body>
 </html>
