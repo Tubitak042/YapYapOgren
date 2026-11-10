@@ -44,6 +44,7 @@
             cursor: pointer;
             font-size: 0.9rem;
         }
+        .btn-ana:hover { background: #30363d; }
         .badge-version {
             background: #238636;
             color: white;
@@ -74,33 +75,32 @@
         }
         .stat-box span { color: #f0883e; }
 
-        /* LABİRENT ALANI */
+        /* KARMAŞIK LABİRENT IZGARASI (11x11) */
         .maze-board {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            grid-template-rows: repeat(7, 1fr);
-            gap: 4px;
-            background: #0d1117;
+            grid-template-columns: repeat(11, 1fr);
+            grid-template-rows: repeat(11, 1fr);
+            gap: 2px;
+            background: #090d16;
             border: 2px solid #30363d;
-            padding: 10px;
+            padding: 8px;
             border-radius: 12px;
             width: 100%;
-            max-width: 490px;
-            height: 490px;
+            max-width: 520px;
+            height: 520px;
             margin: 0 auto 15px auto;
         }
         .cell {
             background: #161b22;
-            border-radius: 6px;
+            border-radius: 3px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.6rem;
-            position: relative;
+            font-size: 1.1rem;
         }
-        .cell.wall { background: #090d16; }
+        .cell.wall { background: #0d1117; border: 1px solid #21262d; }
         .cell.path { background: #21262d; }
-        .cell.active-path { background: rgba(248, 81, 73, 0.25); border: 1px solid #f85149; }
+        .cell.correct-path { background: rgba(248, 81, 73, 0.15); }
 
         /* KONTROL BUTONLARI */
         .controls {
@@ -166,13 +166,13 @@
 <div class="container">
     <div class="top-bar">
         <button class="btn-ana" onclick="location.href='index.html'">🏠 Ana Sayfa</button>
-        <div class="badge-version">SÜRÜM V1 - KİLİTLİ LABİRENT</div>
+        <div class="badge-version">SÜRÜM V2 - ÇIKIŞMAZ LABİRENT</div>
         <button class="btn-ana" style="visibility: hidden;">🔇</button>
     </div>
 
     <div class="header-title">
         <h1>Tübitak Kırlangıçları</h1>
-        <p>Robotu Yönlendir - Kilitli Kapıları Tarih Bilginle Aç!</p>
+        <p>Çıkmaz Sokaklara Dikkat Et! Robotu Hazineye Ulaştır.</p>
     </div>
 
     <div class="stats-bar">
@@ -180,10 +180,10 @@
         <div class="stat-box">Anahtarlar: <span id="keys">0/4</span></div>
     </div>
 
-    <!-- Labirint Izgarası (7x7) -->
+    <!-- 11x11 Karmaşık Labirent Alanı -->
     <div class="maze-board" id="board"></div>
 
-    <!-- Dokunmatik/Tıklama Yön Butonları -->
+    <!-- Yön Butonları -->
     <div class="controls">
         <button class="ctrl-btn" onclick="move(0, -1)">▲</button>
         <div class="ctrl-row">
@@ -204,43 +204,54 @@
 </div>
 
 <script>
-    // 0: Duvar, 1: Çıkış Yolu, 2: Kapı, 3: Hazine
-    const gridLayout = [
-        [1, 1, 0, 0, 0, 0, 0],
-        [0, 2, 1, 0, 0, 0, 0],
-        [0, 0, 1, 1, 2, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0],
-        [0, 0, 2, 1, 1, 0, 0],
-        [0, 0, 1, 0, 0, 0, 0],
-        [0, 0, 2, 1, 1, 1, 3]
+    /* 
+      0: Duvar (Geçilemez çıkmaz sokaklar)
+      1: Normal Yol
+      2: Kilitli Kapı (Soru sorulacak)
+      3: Hazine (Bitiş)
+    */
+    const initialGrid = [
+        [1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0],
+        [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+        [0, 1, 1, 2, 0, 1, 1, 1, 0, 1, 1],
+        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+        [1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1],
+        [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+        [0, 1, 1, 1, 2, 1, 1, 1, 1, 1, 0],
+        [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3]
     ];
 
+    // Labirent her sıfırlandığında güncellenmesi için kopya oluşturuyoruz
+    let gridLayout = JSON.parse(JSON.stringify(initialGrid));
+
     const doors = [
-        { x: 1, y: 1, q: "Malazgirt Savaşı hangi yılda gerçekleşmiştir?", options: ["1071", "1453", "1923", "1299"], ans: "1071" },
-        { x: 4, y: 2, q: "İstanbul hangi padişah döneminde fethedilmiştir?", options: ["Fatih Sultan Mehmet", "Kanuni", "Yavuz", "II. Abdülhamid"], ans: "Fatih Sultan Mehmet" },
-        { x: 2, y: 4, q: "Mustafa Kemal Atatürk Samsun'a hangi yılda çıkmıştır?", options: ["1919", "1920", "1923", "1915"], ans: "1919" },
-        { x: 2, y: 6, q: "Cumhuriyet kaç yılında ilan edilmiştir?", options: ["1923", "1920", "1919", "1924"], ans: "1923" }
+        { x: 3, y: 2, q: "Selçukluların Anadolu kapılarını açtığı Malazgirt Savaşı hangi yılda gerçekleşmiştir?", options: ["1071", "1453", "1923", "1299"], ans: "1071" },
+        { x: 6, y: 4, q: "İstanbul hangi padişah döneminde fethedilmiştir?", options: ["Fatih Sultan Mehmet", "Kanuni", "Yavuz", "II. Abdülhamid"], ans: "Fatih Sultan Mehmet" },
+        { x: 2, y: 6, q: "Mustafa Kemal Atatürk Samsun'a hangi yılda çıkmıştır?", options: ["1919", "1920", "1923", "1915"], ans: "1919" },
+        { x: 4, y: 8, q: "Türkiye Cumhuriyeti kaç yılında ilan edilmiştir?", options: ["1923", "1920", "1919", "1924"], ans: "1923" }
     ];
 
     let robot = { x: 0, y: 0 };
     let keys = 0;
     let score = 0;
-    let currentDoorObj = null;
 
     function drawBoard() {
         const board = document.getElementById("board");
         board.innerHTML = "";
 
-        for (let r = 0; r < 7; r++) {
-            for (let c = 0; c < 7; c++) {
+        for (let r = 0; r < 11; r++) {
+            for (let c = 0; c < 11; c++) {
                 const cell = document.createElement("div");
                 cell.className = "cell";
                 const type = gridLayout[r][c];
 
                 if (type === 0) cell.classList.add("wall");
-                else cell.classList.add("path");
-
-                if (type === 1 || type === 2 || type === 3) cell.classList.add("active-path");
+                else {
+                    cell.classList.add("path");
+                }
 
                 // Robot
                 if (robot.x === c && robot.y === r) {
@@ -264,24 +275,24 @@
         let newX = robot.x + dx;
         let newY = robot.y + dy;
 
-        if (newX < 0 || newX >= 7 || newY < 0 || newY >= 7) return;
+        if (newX < 0 || newX >= 11 || newY < 0 || newY >= 11) return;
 
         let targetType = gridLayout[newY][newX];
 
-        if (targetType === 0) return; // Duvara çarparsa geçemez
+        if (targetType === 0) return; // Çıkmaz sokak / Duvar, geçilemez!
 
-        if (targetType === 2) { // Kapıya çarptı
-            currentDoorObj = doors.find(d => d.x === newX && d.y === newY);
+        if (targetType === 2) { // Kilitli Kapı
+            let currentDoorObj = doors.find(d => d.x === newX && d.y === newY);
             openQuestionModal(currentDoorObj);
             return;
         }
 
-        if (targetType === 3) { // Hazineye ulaştı
+        if (targetType === 3) { // Hazineye Ulaştı
             robot.x = newX;
             robot.y = newY;
             drawBoard();
             setTimeout(() => {
-                alert(`🎉 TEBRİKLER! Hazineye ulaştın ve labirenti tamamladın!\nToplam Puan: ${score}`);
+                alert(`🎉 TEBRİKLER! Karmaşık labirenti çözdün ve hazineye ulaştın!\nToplam Puan: ${score}`);
                 resetGame();
             }, 300);
             return;
@@ -318,13 +329,13 @@
             document.getElementById("keys").innerText = `${keys}/4`;
             document.getElementById("score").innerText = score;
 
-            // Açılan kapıyı normal yola çevir
+            // Kapıyı açık yola dönüştür
             gridLayout[door.y][door.x] = 1;
             robot.x = door.x;
             robot.y = door.y;
             drawBoard();
         } else {
-            alert("❌ YANLIŞ CEVAP! Tarihsel kilit devreye girdi, en başa dönüyorsun!");
+            alert("❌ YANLIŞ CEVAP! Çıkmaz sokakta kayboldun, labirentin başına dönüyorsun!");
             resetGame();
         }
     }
@@ -336,15 +347,12 @@
         document.getElementById("keys").innerText = "0/4";
         document.getElementById("score").innerText = "0";
 
-        // Kapıları tekrar kilitle
-        doors.forEach(d => {
-            gridLayout[d.y][d.x] = 2;
-        });
-
+        // Labirenti ve kapıları ilk haline sıfırla
+        gridLayout = JSON.parse(JSON.stringify(initialGrid));
         drawBoard();
     }
 
-    // Klavyedeki yön tuşları ile kontrol
+    // Klavye yön tuşları veya W-A-S-D desteği
     window.addEventListener("keydown", (e) => {
         if (e.key === "ArrowUp" || e.key === "w") move(0, -1);
         if (e.key === "ArrowDown" || e.key === "s") move(0, 1);
