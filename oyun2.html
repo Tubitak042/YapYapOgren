@@ -3,29 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Zeka Labirenti: Konya Kelime Avı</title>
+<title>Zeka Labirenti: Konya Kelime Avı (SÜRÜM V1)</title>
 <style>
-:root{--bg:#f4efe6;--card:#fff;--ink:#2b2b2b;--mut:#8a8478;--line:#d6cfc0;--acc:#0f766e;--gold:#c9a227;--ok:#3a9d5d;--mid:#d9a521;--no:#7d7a73;--key:#e4ddcf;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17201f;--card:#1f2b2a;--ink:#eee;--mut:#9aa6a4;--line:#3a4a48;--key:#35464a;--no:#4b5655}}
-:root[data-theme="dark"]{--bg:#17201f;--card:#1f2b2a;--ink:#eee;--mut:#9aa6a4;--line:#3a4a48;--key:#35464a;--no:#4b5655}
-*{box-sizing:border-box}html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
-header{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:var(--acc);color:#fff;flex-wrap:wrap}
-header a,header button{color:#fff;background:rgba(255,255,255,.2);border:0;text-decoration:none;padding:7px 13px;border-radius:999px;font:600 .9rem inherit;cursor:pointer}
-.sc{font-weight:700}
-main{width:100%;max-width:520px;padding:12px;text-align:center}
-.panel{background:var(--card);border-radius:16px;padding:22px;box-shadow:0 4px 14px rgba(0,0,0,.1)}
-.big{background:var(--gold);color:#fff;border:0;border-radius:12px;padding:12px 26px;font:700 1.05rem inherit;cursor:pointer}
+:root{
+  --primary:#f43f5e;--primary-hover:#e11d48;--accent:#38bdf8;--success:#22c55e;--warning:#facc15;
+  --card-bg:rgba(30,41,59,.75);--card-border:rgba(255,255,255,.15);
+  --line:rgba(255,255,255,.2);--tile-bg:rgba(15,23,42,.6);--key:rgba(71,85,105,.7);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:radial-gradient(circle at top left,#2e1065,#0f172a 60%),radial-gradient(circle at bottom right,#4c1d95,#0f172a);
+  color:#f8fafc;padding:20px;padding-top:max(20px,env(safe-area-inset-top,0px));padding-bottom:max(20px,env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;
+}
+.container{
+  max-width:640px;width:100%;background:var(--card-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  padding:35px 30px;border-radius:28px;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,.7),0 0 30px rgba(168,85,247,.15);
+  text-align:center;border:1px solid var(--card-border);position:relative;overflow:hidden;
+}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px}
+.version-badge{
+  background:linear-gradient(135deg,#10b981,#047857);color:#fff;font-size:.85rem;font-weight:700;letter-spacing:.5px;
+  padding:6px 16px;border-radius:30px;box-shadow:0 0 15px rgba(16,185,129,.4);text-transform:uppercase;
+}
+.home-btn{
+  background:#475569;color:#fff;border:none;padding:6px 14px;border-radius:12px;font:700 .85rem inherit;
+  cursor:pointer;text-decoration:none;transition:.2s;
+}
+.home-btn:hover{background:#64748b;transform:scale(1.05)}
+h1{
+  font-size:2.2rem;background:linear-gradient(to right,#fb7185,#f43f5e,#e11d48);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;font-weight:900;letter-spacing:-.5px;
+}
+h2{color:#f8fafc;font-size:1.6rem;margin-bottom:10px}
+.subtitle{color:#94a3b8;font-size:1rem;margin-bottom:15px}
+.score-box{
+  background:rgba(15,23,42,.6);border:1px solid rgba(250,204,21,.3);border-radius:16px;padding:8px 20px;display:inline-block;
+  font-size:1.2rem;color:var(--warning);margin:5px 0 12px;font-weight:800;box-shadow:0 4px 15px rgba(250,204,21,.15);
+}
+.panel{padding:10px 0;line-height:1.6;color:#e2e8f0}
+.panel p{margin:10px 0}
+.btn{
+  background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;border:none;padding:14px 36px;
+  font:700 1.15rem inherit;border-radius:16px;cursor:pointer;margin-top:15px;transition:all .25s ease;
+  box-shadow:0 10px 20px -5px rgba(244,63,94,.5);
+}
+.btn:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 15px 25px -5px rgba(244,63,94,.7)}
+.btn.small{padding:10px 20px;font-size:1rem;margin-top:0}
 .hid{display:none!important}
-#q{font-weight:600;margin:6px 0 10px;min-height:3em}
-.sm{color:var(--mut);font-size:.9rem}
+#q{font-weight:600;font-size:1.15rem;line-height:1.6;margin:6px 0 10px;min-height:3em;color:#f8fafc}
+.sm{color:#94a3b8;font-size:.9rem}
 #board{display:grid;gap:6px;justify-content:center;margin:10px 0}
 .row{display:flex;gap:6px;justify-content:center}
-.t{width:52px;height:52px;border:2px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font:800 1.6rem inherit;background:var(--card);transition:border-color .1s}
-.t.f{border-color:var(--mut);animation:pop .12s}
-.t.hint{color:var(--acc);border-style:dashed}
-.t.ok,.t.mid,.t.no{color:#fff;border-color:transparent}
-.t.ok{background:var(--ok)}.t.mid{background:var(--mid)}.t.no{background:var(--no)}
+.t{
+  width:52px;height:52px;border:2px solid var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font:800 1.6rem inherit;background:var(--tile-bg);color:#f8fafc;transition:border-color .1s;
+}
+.t.f{border-color:#fb7185;animation:pop .12s}
+.t.hint{color:var(--accent);border-style:dashed;border-color:var(--accent)}
+.t.ok,.t.mid,.t.no{border-color:transparent}
+.t.ok{background:linear-gradient(145deg,#4ade80,#16a34a);color:#052e16;box-shadow:0 0 14px rgba(34,197,94,.5)}
+.t.mid{background:linear-gradient(145deg,#fde047,#eab308);color:#422006;box-shadow:0 0 14px rgba(250,204,21,.45)}
+.t.no{background:linear-gradient(145deg,#64748b,#475569);color:#e2e8f0}
 .t.flip{animation:flip .6s ease both}
 @keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
 @keyframes pop{50%{transform:scale(1.12)}}
@@ -33,33 +74,63 @@ main{width:100%;max-width:520px;padding:12px;text-align:center}
 @keyframes sh{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 .row.jump .t{animation:jp .5s both}
 @keyframes jp{40%{transform:translateY(-12px)}}
-#kb{display:flex;flex-direction:column;gap:6px;align-items:center;margin-top:8px}
+#kb{display:flex;flex-direction:column;gap:6px;align-items:center;margin-top:12px}
 .kr{display:flex;gap:4px;justify-content:center;width:100%}
-.k{flex:1;max-width:40px;min-width:0;height:48px;border:0;border-radius:6px;background:var(--key);color:var(--ink);font:700 .95rem inherit;cursor:pointer;padding:0}
+.k{
+  flex:1;max-width:40px;min-width:0;height:48px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:var(--key);
+  color:#f8fafc;font:700 .95rem inherit;cursor:pointer;padding:0;transition:.15s;
+}
+.k:hover{background:rgba(100,116,139,.9);transform:translateY(-2px)}
 .k.w{max-width:62px;font-size:.7rem}
-.k.ok{background:var(--ok);color:#fff}.k.mid{background:var(--mid);color:#fff}.k.no{background:var(--no);color:#fff}
+.k.ok{background:linear-gradient(145deg,#4ade80,#16a34a);color:#052e16;border-color:transparent}
+.k.mid{background:linear-gradient(145deg,#fde047,#eab308);color:#422006;border-color:transparent}
+.k.no{background:rgba(15,23,42,.8);color:#64748b;border-color:transparent}
 .hints{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
-.hints button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:7px 11px;font:600 .85rem inherit;cursor:pointer}
+.hints button{
+  background:rgba(51,65,85,.6);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:8px 14px;
+  font:600 .85rem inherit;cursor:pointer;transition:all .25s ease;
+}
+.hints button:hover:not(:disabled){background:rgba(71,85,105,.9);border-color:var(--primary)}
 .hints button:disabled{opacity:.45;cursor:default}
-#msg{min-height:1.4em;font-weight:600;color:var(--acc)}
-table{margin:12px auto;border-collapse:collapse;width:100%}td,th{padding:6px 10px;border-bottom:1px solid var(--line)}
-input{padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:1rem;width:60%}
+#msg{min-height:1.4em;font-weight:600;color:var(--accent)}
+table{width:100%;margin-top:15px;border-collapse:separate;border-spacing:0 8px}
+th{padding:10px;color:#94a3b8;font-size:.9rem;text-transform:uppercase;letter-spacing:1px}
+td{padding:12px;background:rgba(15,23,42,.5);text-align:center;font-weight:600}
+td:first-child{border-radius:12px 0 0 12px}td:last-child{border-radius:0 12px 12px 0}
+tr:nth-child(1) td{background:rgba(234,179,8,.15);color:#facc15}
+tr:nth-child(2) td{background:rgba(148,163,184,.15);color:#cbd5e1}
+tr:nth-child(3) td{background:rgba(180,83,9,.15);color:#f97316}
+input{
+  padding:12px 18px;font-size:1.05rem;border-radius:14px;border:1px solid rgba(255,255,255,.2);width:60%;max-width:260px;
+  background:rgba(15,23,42,.8);color:#fff;text-align:center;outline:none;transition:.2s;
+}
+input:focus{border-color:var(--primary);box-shadow:0 0 15px rgba(244,63,94,.4)}
+a.link{color:#94a3b8}
+@media(max-width:560px){
+  body{padding:10px}
+  .container{padding:22px 10px}
+  h1{font-size:1.7rem}
+}
 @media(max-width:400px){.t{width:44px;height:44px;font-size:1.35rem}.k{height:44px}}
 </style>
 </head>
 <body>
-<header>
-  <a href="index.html">🏠 Ana Sayfa</a>
-  <span>Zeka Labirenti</span>
-  <span class="sc">Puan: <span id="score">0</span></span>
-  <button id="mute" aria-label="Ses">🔊</button>
-</header>
-<main>
+<div class="container">
+  <div class="top-bar">
+    <a href="index.html" class="home-btn">🏠 Ana Sayfa</a>
+    <div class="version-badge">Sürüm V1 - Kelime Avı</div>
+    <button class="home-btn" id="mute" aria-label="Ses">🔊</button>
+  </div>
+
+  <h1>Tübitak Kırlangıçları</h1>
+  <p class="subtitle">Zeka Labirenti - Konya Kelime Avı</p>
+  <div class="score-box">Puan: <span id="score">0</span></div>
+
   <section id="intro" class="panel">
     <h2>Zeka Labirenti Kelime Avına Hoş Geldin!</h2>
     <p>Konya kültürü ve tarihi hakkındaki 8 soruyu tahmin et. Her soruda 6 hakkın var. Her doğru soru <b>100 puan</b>!</p>
     <p class="sm">🟩 Doğru harf, doğru yer<br>🟨 Doğru harf, yanlış yer<br>⬜ Cevapta yok</p>
-    <button class="big" id="start">Macera Başlasın</button>
+    <button class="btn" id="start">Macera Başlasın</button>
   </section>
 
   <section id="game" class="hid">
@@ -74,12 +145,12 @@ input{padding:10px;border-radius:10px;border:1px solid var(--line);background:va
   <section id="end" class="panel hid">
     <h2>Zeka Labirentini Tamamladın! 🎉</h2>
     <p>Toplam puanın: <b id="fin"></b></p>
-    <div id="nameBox"><input id="nm" maxlength="16" placeholder="İsmin"> <button class="big" id="save" style="padding:9px 16px">Kaydet</button></div>
+    <div id="nameBox"><input id="nm" maxlength="16" placeholder="İsmin"> <button class="btn small" id="save">Kaydet</button></div>
     <table><thead><tr><th>Sıra</th><th>İsim</th><th>Puan</th></tr></thead><tbody id="lb"></tbody></table>
-    <button class="big" id="again">Tekrar Oyna</button>
-    <p><a href="index.html">Ana Sayfaya Dön</a></p>
+    <button class="btn" id="again">Tekrar Oyna</button>
+    <p><a class="link" href="index.html">Ana Sayfaya Dön</a></p>
   </section>
-</main>
+</div>
 
 <script>
 const Q=[
