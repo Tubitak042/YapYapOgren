@@ -23,9 +23,9 @@
         .container {
             background: #161b22;
             width: 100%;
-            max-width: 800px;
+            max-width: 850px;
             border-radius: 16px;
-            padding: 25px;
+            padding: 20px;
             box-shadow: 0 12px 30px rgba(0,0,0,0.6);
             border: 1px solid #30363d;
         }
@@ -33,7 +33,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .btn-ana {
             background: #21262d;
@@ -43,10 +43,7 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.9rem;
-            transition: 0.2s;
         }
-        .btn-ana:hover { background: #30363d; }
-        
         .badge-version {
             background: #238636;
             color: white;
@@ -55,106 +52,113 @@
             font-size: 0.85rem;
             font-weight: bold;
         }
-        
         .header-title {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        .header-title h1 {
-            color: #f85149;
-            font-size: 1.8rem;
-            margin-bottom: 4px;
-        }
-        .header-title p {
-            color: #8b949e;
-            font-size: 0.95rem;
-        }
+        .header-title h1 { color: #f85149; font-size: 1.8rem; }
+        .header-title p { color: #8b949e; font-size: 0.9rem; }
 
         .stats-bar {
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .stat-box {
             background: #21262d;
             border: 1px solid #30363d;
-            padding: 8px 18px;
+            padding: 8px 16px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 0.95rem;
         }
         .stat-box span { color: #f0883e; }
 
-        .game-card {
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .question-meta {
-            color: #8b949e;
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .question-text {
-            font-size: 1.15rem;
-            margin-bottom: 25px;
-            font-weight: 500;
-        }
-
-        .options-grid {
+        /* LABİRENT ALANI */
+        .maze-board {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 4px;
+            background: #0d1117;
+            border: 2px solid #30363d;
+            padding: 10px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 490px;
+            height: 490px;
+            margin: 0 auto 15px auto;
         }
-        .option-btn {
+        .cell {
+            background: #161b22;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6rem;
+            position: relative;
+        }
+        .cell.wall { background: #090d16; }
+        .cell.path { background: #21262d; }
+        .cell.active-path { background: rgba(248, 81, 73, 0.25); border: 1px solid #f85149; }
+
+        /* KONTROL BUTONLARI */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .ctrl-row { display: flex; gap: 5px; }
+        .ctrl-btn {
             background: #21262d;
             color: #f0f6fc;
             border: 1px solid #30363d;
-            padding: 12px 15px;
+            width: 45px;
+            height: 45px;
+            font-size: 1.2rem;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
-            transition: 0.2s;
-            text-align: left;
         }
-        .option-btn:hover {
-            background: #30363d;
-            border-color: #8b949e;
-        }
+        .ctrl-btn:hover { background: #30363d; }
 
-        .helpers {
-            display: flex;
+        /* MODAL (SORU PENCERESİ) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
             justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 100;
+        }
+        .modal-content {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-top: 15px;
         }
-        .helper-btn {
-            background: transparent;
-            color: #58a6ff;
-            border: 1px dashed #30363d;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-        .helper-btn:hover { background: rgba(88, 166, 255, 0.1); }
-
-        .alert-box {
-            margin-top: 15px;
+        .opt-btn {
+            background: #21262d;
+            color: white;
+            border: 1px solid #30363d;
             padding: 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            display: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
         }
-        .alert-box.error { background: rgba(248, 81, 73, 0.15); color: #f85149; border: 1px solid #f85149; }
-        .alert-box.success { background: rgba(46, 160, 67, 0.15); color: #3fb950; border: 1px solid #2ea043; }
+        .opt-btn:hover { background: #30363d; }
     </style>
 </head>
 <body>
@@ -162,148 +166,193 @@
 <div class="container">
     <div class="top-bar">
         <button class="btn-ana" onclick="location.href='index.html'">🏠 Ana Sayfa</button>
-        <div class="badge-version">SÜRÜM V1 - TARİH AVCISI</div>
+        <div class="badge-version">SÜRÜM V1 - KİLİTLİ LABİRENT</div>
         <button class="btn-ana" style="visibility: hidden;">🔇</button>
     </div>
 
     <div class="header-title">
         <h1>Tübitak Kırlangıçları</h1>
-        <p>Zeka Labirenti - Tarih Bulmacası</p>
+        <p>Robotu Yönlendir - Kilitli Kapıları Tarih Bilginle Aç!</p>
     </div>
 
     <div class="stats-bar">
         <div class="stat-box">Puan: <span id="score">0</span></div>
-        <div class="stat-box">Kapı: <span id="door-count">1/4</span></div>
-        <div class="stat-box">Hata: <span id="error-count">0</span></div>
+        <div class="stat-box">Anahtarlar: <span id="keys">0/4</span></div>
     </div>
 
-    <div class="game-card">
-        <div class="question-meta" id="q-number">Soru 1 / 4</div>
-        <div class="question-text" id="question-text">Yükleniyor...</div>
+    <!-- Labirint Izgarası (7x7) -->
+    <div class="maze-board" id="board"></div>
 
-        <div class="options-grid" id="options-container">
-            <!-- Seçenekler buraya dinamik gelecek -->
+    <!-- Dokunmatik/Tıklama Yön Butonları -->
+    <div class="controls">
+        <button class="ctrl-btn" onclick="move(0, -1)">▲</button>
+        <div class="ctrl-row">
+            <button class="ctrl-btn" onclick="move(-1, 0)">◄</button>
+            <button class="ctrl-btn" onclick="move(0, 1)">▼</button>
+            <button class="ctrl-btn" onclick="move(1, 0)">►</button>
         </div>
+    </div>
+</div>
 
-        <div class="helpers">
-            <button class="helper-btn" onclick="useHint()">💡 Ücretsiz İpucu</button>
-        </div>
-
-        <div class="alert-box" id="alert-box"></div>
+<!-- Soru Pop-up Penceresi -->
+<div class="modal" id="questionModal">
+    <div class="modal-content">
+        <h3 style="color:#f85149; margin-bottom:10px;">🔒 KİLİTLİ KAPI!</h3>
+        <p id="q-text" style="font-size:1.05rem; margin-bottom:15px;"></p>
+        <div class="options-grid" id="q-options"></div>
     </div>
 </div>
 
 <script>
-    const questions = [
-        {
-            q: "Selçukluların Anadolu kapılarını açtığı Malazgirt Savaşı hangi yılda gerçekleşmiştir?",
-            options: ["1071", "1453", "1176", "1299"],
-            answer: "1071",
-            hint: "11. yüzyılın ikinci yarısında (10x1) yapılmıştır."
-        },
-        {
-            q: "Osmanlı Devleti'nin başkenti hangi antlaşma veya olayla 1453'te İstanbul'a taşınmıştır?",
-            options: ["Ankara Savaşı", "İstanbul'un Fethi", "Varna Savaşı", "Kosova Savaşı"],
-            answer: "İstanbul'un Fethi",
-            hint: "Fatih Sultan Mehmet'in devr-i saadetinde gerçekleşmiştir."
-        },
-        {
-            q: "Türkiye Cumhuriyeti'nin kurucusu Mustafa Kemal Atatürk, Millî Mücadele'yi başlatmak için Samsun'a hangi yıl çıkmıştır?",
-            options: ["1919", "1920", "1923", "1881"],
-            answer: "1919",
-            hint: "1919 yılının 19 Mayıs günüdür."
-        },
-        {
-            q: "Birinci İnönü Savaşı sonucunda ilan edilen ve uluslararası alanda yeni devletin sesini duyuran hukuki metin hangisidir?",
-            options: ["Amasya Genelgesi", "Misak-ı Millî", "Teşkilat-ı Esasiye Kanunu", "Londra Konferansı"],
-            answer: "Teşkilat-ı Esasiye Kanunu",
-            hint: "1921 Anayasası olarak da bilinen ilk teşkilat kanunudur."
-        }
+    // 0: Duvar, 1: Çıkış Yolu, 2: Kapı, 3: Hazine
+    const gridLayout = [
+        [1, 1, 0, 0, 0, 0, 0],
+        [0, 2, 1, 0, 0, 0, 0],
+        [0, 0, 1, 1, 2, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0],
+        [0, 0, 2, 1, 1, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 2, 1, 1, 1, 3]
     ];
 
-    let currentDoor = 0;
-    let score = 0;
-    let errors = 0;
+    const doors = [
+        { x: 1, y: 1, q: "Malazgirt Savaşı hangi yılda gerçekleşmiştir?", options: ["1071", "1453", "1923", "1299"], ans: "1071" },
+        { x: 4, y: 2, q: "İstanbul hangi padişah döneminde fethedilmiştir?", options: ["Fatih Sultan Mehmet", "Kanuni", "Yavuz", "II. Abdülhamid"], ans: "Fatih Sultan Mehmet" },
+        { x: 2, y: 4, q: "Mustafa Kemal Atatürk Samsun'a hangi yılda çıkmıştır?", options: ["1919", "1920", "1923", "1915"], ans: "1919" },
+        { x: 2, y: 6, q: "Cumhuriyet kaç yılında ilan edilmiştir?", options: ["1923", "1920", "1919", "1924"], ans: "1923" }
+    ];
 
-    function loadGame() {
-        if (currentDoor >= questions.length) {
-            document.querySelector(".game-card").innerHTML = `
-                <h2 style="color: #3fb950; margin-bottom: 15px;">🎉 Tebrikler Labirenti Geçtin!</h2>
-                <p style="color: #c9d1d9; margin-bottom: 20px;">Tüm kilitli kapıları doğru açtın ve hazineye ulaştın!</p>
-                <div style="font-size: 1.2rem; font-weight: bold; color: #f0883e;">Toplam Puanın: ${score}</div>
-                <button class="btn-ana" style="margin-top: 20px; background: #238636; color: white;" onclick="restartGame()">Yeniden Başla</button>
-            `;
+    let robot = { x: 0, y: 0 };
+    let keys = 0;
+    let score = 0;
+    let currentDoorObj = null;
+
+    function drawBoard() {
+        const board = document.getElementById("board");
+        board.innerHTML = "";
+
+        for (let r = 0; r < 7; r++) {
+            for (let c = 0; c < 7; c++) {
+                const cell = document.createElement("div");
+                cell.className = "cell";
+                const type = gridLayout[r][c];
+
+                if (type === 0) cell.classList.add("wall");
+                else cell.classList.add("path");
+
+                if (type === 1 || type === 2 || type === 3) cell.classList.add("active-path");
+
+                // Robot
+                if (robot.x === c && robot.y === r) {
+                    cell.innerText = "🤖";
+                } 
+                // Kapılar
+                else if (type === 2) {
+                    cell.innerText = "🔒";
+                }
+                // Hazine
+                else if (type === 3) {
+                    cell.innerText = "🏆";
+                }
+
+                board.appendChild(cell);
+            }
+        }
+    }
+
+    function move(dx, dy) {
+        let newX = robot.x + dx;
+        let newY = robot.y + dy;
+
+        if (newX < 0 || newX >= 7 || newY < 0 || newY >= 7) return;
+
+        let targetType = gridLayout[newY][newX];
+
+        if (targetType === 0) return; // Duvara çarparsa geçemez
+
+        if (targetType === 2) { // Kapıya çarptı
+            currentDoorObj = doors.find(d => d.x === newX && d.y === newY);
+            openQuestionModal(currentDoorObj);
             return;
         }
 
-        const currentQ = questions[currentDoor];
-        document.getElementById("q-number").innerText = `Soru ${currentDoor + 1} / 4`;
-        document.getElementById("door-count").innerText = `${currentDoor + 1}/4`;
-        document.getElementById("question-text").innerText = currentQ.q;
-        document.getElementById("alert-box").style.display = "none";
+        if (targetType === 3) { // Hazineye ulaştı
+            robot.x = newX;
+            robot.y = newY;
+            drawBoard();
+            setTimeout(() => {
+                alert(`🎉 TEBRİKLER! Hazineye ulaştın ve labirenti tamamladın!\nToplam Puan: ${score}`);
+                resetGame();
+            }, 300);
+            return;
+        }
 
-        const optionsContainer = document.getElementById("options-container");
-        optionsContainer.innerHTML = "";
-
-        currentQ.options.forEach(opt => {
-            const btn = document.createElement("button");
-            btn.className = "option-btn";
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(opt);
-            optionsContainer.appendChild(btn);
-        });
+        robot.x = newX;
+        robot.y = newY;
+        drawBoard();
     }
 
-    function checkAnswer(selected) {
-        const currentQ = questions[currentDoor];
-        const alertBox = document.getElementById("alert-box");
+    function openQuestionModal(door) {
+        document.getElementById("q-text").innerText = door.q;
+        const optsContainer = document.getElementById("q-options");
+        optsContainer.innerHTML = "";
 
-        if (selected === currentQ.answer) {
+        door.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.className = "opt-btn";
+            btn.innerText = opt;
+            btn.onclick = () => answerQuestion(opt, door);
+            optsContainer.appendChild(btn);
+        });
+
+        document.getElementById("questionModal").style.display = "flex";
+    }
+
+    function answerQuestion(selected, door) {
+        document.getElementById("questionModal").style.display = "none";
+
+        if (selected === door.ans) {
+            alert("🔑 DOĞRU CEVAP! Kapı açıldı ve 1 anahtar kazandın.");
+            keys++;
             score += 25;
+            document.getElementById("keys").innerText = `${keys}/4`;
             document.getElementById("score").innerText = score;
-            alertBox.className = "alert-box success";
-            alertBox.innerText = "Doğru! Kapı açıldı, ilerliyorsun...";
-            alertBox.style.display = "block";
 
-            currentDoor++;
-            setTimeout(loadGame, 1500);
+            // Açılan kapıyı normal yola çevir
+            gridLayout[door.y][door.x] = 1;
+            robot.x = door.x;
+            robot.y = door.y;
+            drawBoard();
         } else {
-            errors++;
-            document.getElementById("error-count").innerText = errors;
-            alertBox.className = "alert-box error";
-            alertBox.innerText = "Yanlış cevap! Tarihsel paradoks oluştu, labirentin başına dönüyorsun!";
-            alertBox.style.display = "block";
-
-            // Yanlışta oyunu / kapıları baştan başlatma kuralı
-            setTimeout(() => {
-                currentDoor = 0;
-                loadGame();
-            }, 2000);
+            alert("❌ YANLIŞ CEVAP! Tarihsel kilit devreye girdi, en başa dönüyorsun!");
+            resetGame();
         }
     }
 
-    function useHint() {
-        const currentQ = questions[currentDoor];
-        const alertBox = document.getElementById("alert-box");
-        alertBox.className = "alert-box success";
-        alertBox.style.background = "rgba(88, 166, 255, 0.15)";
-        alertBox.style.color = "#58a6ff";
-        alertBox.style.borderColor = "#58a6ff";
-        alertBox.innerText = `💡 İpucu: ${currentQ.hint}`;
-        alertBox.style.display = "block";
-    }
-
-    function restartGame() {
-        currentDoor = 0;
+    function resetGame() {
+        robot = { x: 0, y: 0 };
+        keys = 0;
         score = 0;
-        errors = 0;
-        document.getElementById("score").innerText = score;
-        document.getElementById("error-count").innerText = errors;
-        location.reload();
+        document.getElementById("keys").innerText = "0/4";
+        document.getElementById("score").innerText = "0";
+
+        // Kapıları tekrar kilitle
+        doors.forEach(d => {
+            gridLayout[d.y][d.x] = 2;
+        });
+
+        drawBoard();
     }
 
-    // Oyunu başlat
-    loadGame();
+    // Klavyedeki yön tuşları ile kontrol
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp" || e.key === "w") move(0, -1);
+        if (e.key === "ArrowDown" || e.key === "s") move(0, 1);
+        if (e.key === "ArrowLeft" || e.key === "a") move(-1, 0);
+        if (e.key === "ArrowRight" || e.key === "d") move(1, 0);
+    });
+
+    drawBoard();
 </script>
 
 </body>
