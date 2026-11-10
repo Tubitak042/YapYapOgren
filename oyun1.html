@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V24)</title>
+    <title>Tübitak Kırlangıçları - Bulmaca Oyunu (SÜRÜM V25)</title>
     <style>
         :root {
             --primary: #f43f5e;
@@ -14,6 +14,9 @@
             --dark-bg: #0f172a;
             --card-bg: rgba(30, 41, 59, 0.75);
             --card-border: rgba(255, 255, 255, 0.15);
+            --hw: 62px;
+            --hh: 72px;
+            --hgap: 10px;
         }
 
         * {
@@ -126,24 +129,39 @@
             box-shadow: 0 4px 15px rgba(250, 204, 21, 0.15);
         }
 
+        .rules {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            margin-top: 5px;
+            line-height: 1.55;
+        }
+        .legend {
+            display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+            font-size: 0.8rem; color: #94a3b8; margin-top: 10px;
+        }
+        .legend i {
+            display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+            margin-right: 5px; vertical-align: -1px;
+        }
+
         .hex-board { 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            gap: 10px; 
+            gap: var(--hgap); 
             margin: 25px 0; 
         }
         
         .hex-row { 
             display: flex; 
-            gap: 10px; 
+            gap: var(--hgap); 
             justify-content: center; 
             align-items: center; 
         }
         
         .hex { 
-            width: 62px; 
-            height: 72px; 
+            width: var(--hw); 
+            height: var(--hh); 
             background: linear-gradient(145deg, #fbcfe8, #f472b6); 
             position: relative; 
             display: flex; 
@@ -157,6 +175,7 @@
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             filter: drop-shadow(0 6px 8px rgba(0,0,0,0.3));
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .hex:hover { 
@@ -173,6 +192,31 @@
             font-size: 1.25rem; 
             cursor: default; 
             filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.6));
+        }
+        .hex.fixed-target:hover { transform: none; z-index: auto; }
+
+        .hex.fixed-col {
+            background: linear-gradient(145deg, #38bdf8, #0369a1);
+            filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.55));
+        }
+
+        .hex.spacer { visibility: hidden; }
+
+        .hex.given {
+            background: linear-gradient(145deg, #fde68a, #f59e0b);
+            color: #78350f;
+            cursor: default;
+        }
+        .hex.given:hover {
+            background: linear-gradient(145deg, #fde68a, #f59e0b);
+            color: #78350f;
+            transform: none;
+            filter: drop-shadow(0 6px 8px rgba(0,0,0,0.3));
+        }
+
+        .hex.conflict {
+            background: linear-gradient(145deg, #fca5a5, #ef4444);
+            color: #450a0a;
         }
 
         .hex.solved { 
@@ -224,6 +268,13 @@
             box-shadow: 0 15px 25px -5px rgba(244, 63, 94, 0.7);
         }
 
+        .btn-reset {
+            background: linear-gradient(135deg, #475569, #334155);
+            box-shadow: 0 10px 20px -5px rgba(71, 85, 105, 0.5);
+            margin-left: 10px;
+        }
+        .btn-reset:hover { box-shadow: 0 15px 25px -5px rgba(71, 85, 105, 0.7); }
+
         .hidden { display: none; }
         
         .options { display: flex; flex-direction: column; gap: 14px; margin-top: 25px; }
@@ -244,6 +295,9 @@
             border-color: var(--primary); 
             transform: translateX(6px);
         }
+        .option-btn.correct { background: rgba(22, 163, 74, 0.55); border-color: #22c55e; }
+        .option-btn.wrong { background: rgba(185, 28, 28, 0.55); border-color: #f43f5e; }
+        .option-btn:disabled { cursor: default; transform: none; }
         
         table { 
             width: 100%; 
@@ -269,6 +323,18 @@
         tr:nth-child(1) td { background: rgba(234, 179, 8, 0.15); color: #facc15; }
         tr:nth-child(2) td { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
         tr:nth-child(3) td { background: rgba(180, 83, 9, 0.15); color: #f97316; }
+        tr.me td { outline: 2px solid rgba(56, 189, 248, 0.7); outline-offset: -2px; }
+
+        /* Telefon ekranlarında 5x5 bulmaca sığsın diye küçült */
+        @media (max-width: 560px) {
+            :root { --hw: 46px; --hh: 53px; --hgap: 6px; }
+            body { padding: 10px; }
+            .container { padding: 22px 10px; }
+            h1 { font-size: 1.7rem; }
+            .hex { font-size: 1.15rem; }
+            .hex.fixed-target { font-size: 1rem; }
+            .btn-reset { margin-left: 0; }
+        }
     </style>
 </head>
 <body>
@@ -276,7 +342,7 @@
 <div class="container" id="app">
     <div class="top-bar">
         <a href="index.html" class="home-btn">🏠 Ana Sayfa</a>
-        <div class="version-badge" style="margin:0;">Sürüm V24 - Kusursuz Bulmaca</div>
+        <div class="version-badge" style="margin:0;">Sürüm V25 - Zorlu Bulmaca</div>
     </div>
     
     <h1>Tübitak Kırlangıçları</h1>
@@ -285,19 +351,26 @@
     <!-- Giriş Ekranı -->
     <div id="screen-start">
         <p style="margin: 25px 0 15px 0; font-size: 1.15rem; color: #e2e8f0;">Yarışmaya başlamak için adını ve soyadını gir:</p>
-        <input type="text" id="playerName" class="input-style" placeholder="Adınız Soyadınız"><br>
+        <input type="text" id="playerName" class="input-style" placeholder="Adınız Soyadınız" maxlength="30"><br>
         <button class="btn" onclick="playSound(); startGame();">Oyunu Başlat</button>
     </div>
 
     <!-- Oyun Ekranı -->
     <div id="screen-game" class="hidden">
         <h3 id="levelTitle" style="color: var(--accent); font-size: 1.3rem;">1. Bölüm</h3>
-        <div class="timer-box" id="timer">Kalan Süre: 03:00</div>
-        <p style="font-size: 0.95rem; color: #cbd5e1; margin-top: 5px;">Hücrelere tıklayarak (1-3) sayıları yerleştir. Karşısındaki kırmızı hedef sayıya ulaşan satırlar yeşil yanacaktır!</p>
+        <div class="timer-box" id="timer">Kalan Süre: 04:00</div>
+        <p class="rules" id="rulesText"></p>
+        <div class="legend">
+            <span><i style="background:#f43f5e"></i>Satır toplamı</span>
+            <span><i style="background:#38bdf8"></i>Sütun toplamı</span>
+            <span><i style="background:#f59e0b"></i>Sabit sayı</span>
+            <span><i style="background:#ef4444"></i>Yan yana aynı sayı</span>
+        </div>
         
         <div class="hex-board" id="hexBoard"></div>
         
         <button class="btn" onclick="playSound(); checkPuzzle();">Bölümü Tamamla</button>
+        <button class="btn btn-reset" onclick="resetBoard();">↺ Tabloyu Sıfırla</button>
     </div>
 
     <!-- Soru Ekranı -->
@@ -333,27 +406,35 @@
 </div>
 
 <script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
+    /* ---------- Ses (tarayıcı kısıtlamaları için ilk kullanımda oluşturulur) ---------- */
+    let audioCtx = null;
+    function getCtx() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        } catch (e) { return null; }
+        return audioCtx;
+    }
+
     function playSound() {
-        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const ctx = getCtx(); if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(ctx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
+        osc.stop(ctx.currentTime + 0.1);
     }
 
     function playCorrectSound() {
-        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const ctx = getCtx(); if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(523.25, now);
         osc.frequency.setValueAtTime(659.25, now + 0.1);
@@ -361,40 +442,50 @@
         gain.gain.setValueAtTime(0.15, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(ctx.destination);
         osc.start(now);
         osc.stop(now + 0.4);
     }
 
     function playWrongSound() {
-        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const ctx = getCtx(); if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(220, now);
         osc.frequency.setValueAtTime(164.81, now + 0.15);
         gain.gain.setValueAtTime(0.2, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(ctx.destination);
         osc.start(now);
         osc.stop(now + 0.4);
     }
 
+    /* ---------- Oyun durumu ---------- */
     let currentLevel = 1;
     let score = 0;
     let timerInterval;
-    let timeLeft = 180;
+    let timeLeft = 240;
     let playerName = "";
-    
-    let grid = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+    let busy = false;        // çift tıklama / çift sayım hatalarını engeller
+    let grid = [];
 
+    /*
+      Bulmaca kuralları (her bölümün TEK bir çözümü vardır):
+        - Hücreler 1 ile 3 arasında bir sayı alır.
+        - Her satırdaki sayıların toplamı satır hedefini, her sütundakilerin toplamı sütun hedefini vermeli.
+        - Yan yana veya alt alta duran iki hücre AYNI sayı olamaz.
+        - Sarı hücreler hazır verilmiştir, değiştirilemez.
+    */
     const levelsData = [
         {
-            title: "1. Bölüm: Sille Macerası (3 Dk - Zor)",
-            time: 180,
-            gridType: 1,
+            title: "1. Bölüm: Sille Macerası (4 Dk - Zor)",
+            time: 240,
+            puzzle: { R: 3, C: 3, max: 3,
+                rowT: [7, 6, 6], colT: [6, 6, 7],
+                given: { 0: 2 } },
             question: {
                 q: "Konya'nın tarihi dokusuyla ünlü, Rum ve Türk kültürünün izlerini taşıyan tarihi mahallesi / sit alanı hangisidir?",
                 options: ["A) Sille", "B) İvriz", "C) Çatalhöyük", "D) Lystra"],
@@ -402,9 +493,11 @@
             }
         },
         {
-            title: "2. Bölüm: Çatalhöyük Gizemi (5 Dk - Zor)",
-            time: 300,
-            gridType: 2,
+            title: "2. Bölüm: Çatalhöyük Gizemi (6 Dk - Zor)",
+            time: 360,
+            puzzle: { R: 4, C: 4, max: 3,
+                rowT: [8, 7, 8, 7], colT: [7, 8, 9, 6],
+                given: {} },
             question: {
                 q: "Dünyanın en eski yerleşim yerlerinden biri olan ve neolitik döneme ev sahipliği yapan Konya'daki UNESCO miras alanı neresidir?",
                 options: ["A) Alaeddin Tepesi", "B) Çatalhöyük", "C) Karatay Medresesi", "D) Aziziye Camii"],
@@ -412,9 +505,11 @@
             }
         },
         {
-            title: "3. Bölüm: Selçuklu Başkenti (5 Dk - Usta)",
-            time: 300,
-            gridType: 3,
+            title: "3. Bölüm: Selçuklu Başkenti (8 Dk - Usta)",
+            time: 480,
+            puzzle: { R: 5, C: 5, max: 3,
+                rowT: [9, 10, 11, 9, 11], colT: [9, 9, 9, 10, 13],
+                given: { 16: 3 } },
             question: {
                 q: "Selçuklu Devleti'ne başkentlik yapmış Konya'da, Alaeddin Tepesi üzerinde bulunan tarihi caminin adı nedir?",
                 options: ["A) Selimiye Camii", "B) Aziziye Camii", "C) Alaeddin Camii", "D) İplikçi Camii"],
@@ -422,6 +517,10 @@
             }
         }
     ];
+
+    document.getElementById("playerName").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { playSound(); startGame(); }
+    });
 
     function startGame() {
         const nameInput = document.getElementById("playerName").value.trim();
@@ -434,179 +533,188 @@
 
     function loadLevel() {
         const data = levelsData[currentLevel - 1];
+        const p = data.puzzle;
+        busy = false;
         timeLeft = data.time;
         document.getElementById("levelTitle").innerText = data.title;
-        grid = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-        
+        document.getElementById("rulesText").innerText =
+            "Hücrelere tıklayarak 1 ile " + p.max + " arasındaki sayıları yerleştir (tekrar tıkla: sayı artar, sağ tık: azalır). " +
+            "Yan yana veya alt alta duran hücreler AYNI sayı olamaz. Her satır ve sütun, kırmızı (satır) ile mavi (sütun) hedef toplamını vermelidir!";
+
+        grid = new Array(p.R * p.C).fill(0);
+        Object.keys(p.given).forEach(k => { grid[Number(k)] = p.given[k]; });
+
         startTimer();
         renderHexBoard();
     }
 
+    function formatTime() {
+        const t = Math.max(0, timeLeft);
+        const m = Math.floor(t / 60);
+        const s = t % 60;
+        document.getElementById("timer").innerText = `Kalan Süre: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+
     function startTimer() {
         clearInterval(timerInterval);
+        formatTime();
         timerInterval = setInterval(() => {
-            let m = Math.floor(timeLeft / 60);
-            let s = timeLeft % 60;
-            document.getElementById("timer").innerText = `Kalan Süre: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            timeLeft--;
+            formatTime();
             if(timeLeft <= 0) {
                 clearInterval(timerInterval);
                 gameOver("Süreniz bittiği için elendiniz!");
             }
-            timeLeft--;
         }, 1000);
     }
 
     function renderHexBoard() {
         const board = document.getElementById("hexBoard");
+        const p = levelsData[currentLevel - 1].puzzle;
         board.innerHTML = "";
-        const data = levelsData[currentLevel - 1];
 
-        if(data.gridType === 1) {
-            board.innerHTML = `
-                <div class="hex-row">
-                    <div class="hex fixed-target">7</div>
-                    <div class="hex" onclick="changeCell(0)" id="c0">${grid[0]}</div>
-                    <div class="hex" onclick="changeCell(1)" id="c1">${grid[1]}</div>
-                    <div class="hex" onclick="changeCell(2)" id="c2">${grid[2]}</div>
-                </div>
-                <div class="hex-row">
-                    <div class="hex fixed-target">5</div>
-                    <div class="hex" onclick="changeCell(3)" id="c3">${grid[3]}</div>
-                    <div class="hex" onclick="changeCell(4)" id="c4">${grid[4]}</div>
-                </div>
-                <div class="hex-row">
-                    <div class="hex fixed-target">6</div>
-                    <div class="hex" onclick="changeCell(5)" id="c5">${grid[5]}</div>
-                    <div class="hex" onclick="changeCell(6)" id="c6">${grid[6]}</div>
-                </div>
-                <div class="hex-row">
-                    <div class="hex fixed-target">5</div>
-                    <div class="hex" onclick="changeCell(7)" id="c7">${grid[7]}</div>
-                    <div class="hex" onclick="changeCell(8)" id="c8">${grid[8]}</div>
-                </div>
-            `;
-        } else if(data.gridType === 2) {
-            board.innerHTML = `
-                <div class="hex-row">
-                    <div class="hex fixed-target">10</div>
-                    <div class="hex" onclick="changeCell(0)" id="c0">${grid[0]}</div>
-                    <div class="hex" onclick="changeCell(1)" id="c1">${grid[1]}</div>
-                    <div class="hex" onclick="changeCell(2)" id="c2">${grid[2]}</div>
-                    <div class="hex" onclick="changeCell(3)" id="c3">${grid[3]}</div>
-                </div>
-                <div class="hex-row">
-                    <div class="hex fixed-target">5</div>
-                    <div class="hex" onclick="changeCell(4)" id="c4">${grid[4]}</div>
-                    <div class="hex" onclick="changeCell(5)" id="c5">${grid[5]}</div>
-                </div>
-                <div class="hex-row">
-                    <div class="hex fixed-target">6</div>
-                    <div class="hex" onclick="changeCell(6)" id="c6">${grid[6]}</div>
-                    <div class="hex" onclick="changeCell(7)" id="c7">${grid[7]}</div>
-                </div>
-                <div class="hex-row">
-                    <div class="hex fixed-target">5</div>
-                    <div class="hex" onclick="changeCell(8)" id="c8">${grid[8]}</div>
-                    <div class="hex" onclick="changeCell(9)" id="c9">${grid[9]}</div>
-                </div>
-            `;
-        } else {
-            board.innerHTML = `
-                <div class="hex-row">
-                    <div class="hex fixed-target">11</div>
-                    <div class="hex" onclick="changeCell(0)" id="c0">${grid[0]}</div>
-                    <div class="hex" onclick="changeCell(1)" id="c1">${grid[1]}</div>
-                    <div class="hex" onclick="changeCell(2)" id="c2">${grid[2]}</div>
-                    <div class="hex" onclick="changeCell(3)" id="c3">${grid[3]}</div>
-                </div>
-                <div class="hex-row">
-                    <div class="hex fixed-target">8</div>
-                    <div class="hex" onclick="changeCell(4)" id="c4">${grid[4]}</div>
-                    <div class="hex" onclick="changeCell(5)" id="c5">${grid[5]}</div>
-                    <div class="hex" onclick="changeCell(6)" id="c6">${grid[6]}</div>
-                </div>
-                <div class="hex-row">
-                    <div class="hex fixed-target">5</div>
-                    <div class="hex" onclick="changeCell(7)" id="c7">${grid[7]}</div>
-                    <div class="hex" onclick="changeCell(8)" id="c8">${grid[8]}</div>
-                </div>
-                <div class="hex-row">
-                    <div class="hex fixed-target">3</div>
-                    <div class="hex" onclick="changeCell(9)" id="c9">${grid[9]}</div>
-                </div>
-            `;
-        }
-        checkLiveState();
-    }
+        for (let r = 0; r < p.R; r++) {
+            const row = document.createElement("div");
+            row.className = "hex-row";
 
-    function changeCell(idx) {
-        playSound();
-        grid[idx] = (grid[idx] % 3) + 1;
-        document.getElementById(`c${idx}`).innerText = grid[idx];
-        checkLiveState();
-    }
+            const t = document.createElement("div");
+            t.className = "hex fixed-target";
+            t.id = "rt" + r;
+            t.innerText = p.rowT[r];
+            row.appendChild(t);
 
-    function checkLiveState() {
-        const data = levelsData[currentLevel - 1];
-        
-        if(data.gridType === 1) {
-            let s1 = grid[0] + grid[1] + grid[2];
-            let s2 = grid[3] + grid[4];
-            let s3 = grid[5] + grid[6];
-            let s4 = grid[7] + grid[8];
-
-            toggleSolved([0,1,2], s1 === 7);
-            toggleSolved([3,4], s2 === 5);
-            toggleSolved([5,6], s3 === 6);
-            toggleSolved([7,8], s4 === 5);
-        } else if(data.gridType === 2) {
-            let s1 = grid[0] + grid[1] + grid[2] + grid[3];
-            let s2 = grid[4] + grid[5];
-            let s3 = grid[6] + grid[7];
-            let s4 = grid[8] + grid[9];
-
-            toggleSolved([0,1,2,3], s1 === 10);
-            toggleSolved([4,5], s2 === 5);
-            toggleSolved([6,7], s3 === 6);
-            toggleSolved([8,9], s4 === 5);
-        } else if(data.gridType === 3) {
-            let s1 = grid[0] + grid[1] + grid[2] + grid[3];
-            let s2 = grid[4] + grid[5] + grid[6];
-            let s3 = grid[7] + grid[8];
-            let s4 = grid[9];
-
-            toggleSolved([0,1,2,3], s1 === 11);
-            toggleSolved([4,5,6], s2 === 8);
-            toggleSolved([7,8], s3 === 5);
-            toggleSolved([9], s4 === 3);
-        }
-    }
-
-    function toggleSolved(indices, condition) {
-        indices.forEach(idx => {
-            const el = document.getElementById(`c${idx}`);
-            if(el) {
-                if(condition) el.classList.add("solved");
-                else el.classList.remove("solved");
+            for (let c = 0; c < p.C; c++) {
+                const idx = r * p.C + c;
+                const cell = document.createElement("div");
+                cell.className = "hex";
+                cell.id = "c" + idx;
+                if (p.given[idx] !== undefined) {
+                    cell.classList.add("given");
+                } else {
+                    cell.addEventListener("click", () => changeCell(idx, 1));
+                    cell.addEventListener("contextmenu", (e) => { e.preventDefault(); changeCell(idx, -1); });
+                }
+                row.appendChild(cell);
             }
+            board.appendChild(row);
+        }
+
+        // Sütun hedefleri (en alt satır)
+        const last = document.createElement("div");
+        last.className = "hex-row";
+        const sp = document.createElement("div");
+        sp.className = "hex spacer";
+        last.appendChild(sp);
+        for (let c = 0; c < p.C; c++) {
+            const t = document.createElement("div");
+            t.className = "hex fixed-target fixed-col";
+            t.id = "ct" + c;
+            t.innerText = p.colT[c];
+            last.appendChild(t);
+        }
+        board.appendChild(last);
+
+        refreshCells();
+        checkLiveState();
+    }
+
+    // Tabloyu başlangıç haline getirir (sabit sayılar kalır, süre sıfırlanmaz)
+    function resetBoard() {
+        if (busy) return;
+        playSound();
+        const p = levelsData[currentLevel - 1].puzzle;
+        grid = new Array(p.R * p.C).fill(0);
+        Object.keys(p.given).forEach(k => { grid[Number(k)] = p.given[k]; });
+        refreshCells();
+        checkLiveState();
+    }
+
+    function refreshCells() {
+        grid.forEach((v, i) => {
+            const el = document.getElementById("c" + i);
+            if (el) el.innerText = v === 0 ? "" : v;
         });
     }
 
-    function checkPuzzle() {
-        clearInterval(timerInterval);
-        const data = levelsData[currentLevel - 1];
-        const container = document.getElementById("app");
-        let isValid = false;
+    function changeCell(idx, dir) {
+        if (busy) return;
+        const p = levelsData[currentLevel - 1].puzzle;
+        if (p.given[idx] !== undefined) return;
+        playSound();
+        const n = p.max + 1;                       // 0 (boş) + 1..max
+        grid[idx] = (grid[idx] + dir + n) % n;
+        const el = document.getElementById("c" + idx);
+        el.innerText = grid[idx] === 0 ? "" : grid[idx];
+        checkLiveState();
+    }
 
-        if(data.gridType === 1) {
-            if((grid[0]+grid[1]+grid[2]) === 7 && (grid[3]+grid[4]) === 5 && (grid[5]+grid[6]) === 6 && (grid[7]+grid[8]) === 5) isValid = true;
-        } else if(data.gridType === 2) {
-            if((grid[0]+grid[1]+grid[2]+grid[3]) === 10 && (grid[4]+grid[5]) === 5 && (grid[6]+grid[7]) === 6 && (grid[8]+grid[9]) === 5) isValid = true;
-        } else if(data.gridType === 3) {
-            if((grid[0]+grid[1]+grid[2]+grid[3]) === 11 && (grid[4]+grid[5]+grid[6]) === 8 && (grid[7]+grid[8]) === 5 && grid[9] === 3) isValid = true;
+    // Bir satır veya sütunu değerlendirir: tamamen dolu mu ve toplam hedefi tutuyor mu
+    function evalLine(vals, target) {
+        const filled = vals.every(v => v > 0);
+        const sum = vals.reduce((a, b) => a + b, 0);
+        return { ok: filled && sum === target };
+    }
+
+    // Hücrenin yatay veya dikey komşularından biriyle aynı sayıya sahip olup olmadığına bakar
+    function hasSameNeighbor(p, r, c) {
+        const v = grid[r * p.C + c];
+        if (v === 0) return false;
+        const nb = [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]];
+        return nb.some(([rr, cc]) => rr >= 0 && rr < p.R && cc >= 0 && cc < p.C && grid[rr * p.C + cc] === v);
+    }
+
+    function getLines(p) {
+        const rows = [], cols = [];
+        for (let r = 0; r < p.R; r++) {
+            const v = []; for (let c = 0; c < p.C; c++) v.push(grid[r * p.C + c]);
+            rows.push(evalLine(v, p.rowT[r]));
         }
+        for (let c = 0; c < p.C; c++) {
+            const v = []; for (let r = 0; r < p.R; r++) v.push(grid[r * p.C + c]);
+            cols.push(evalLine(v, p.colT[c]));
+        }
+        return { rows, cols };
+    }
 
-        if(isValid) {
+    function checkLiveState() {
+        const p = levelsData[currentLevel - 1].puzzle;
+        const L = getLines(p);
+
+        L.rows.forEach((x, r) => toggle("rt" + r, "solved", x.ok));
+        L.cols.forEach((x, c) => toggle("ct" + c, "solved", x.ok));
+
+        for (let r = 0; r < p.R; r++) {
+            for (let c = 0; c < p.C; c++) {
+                const idx = r * p.C + c;
+                const dup = hasSameNeighbor(p, r, c);
+                toggle("c" + idx, "conflict", dup);
+                toggle("c" + idx, "solved", L.rows[r].ok && L.cols[c].ok && !dup);
+            }
+        }
+    }
+
+    function toggle(id, cls, cond) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle(cls, !!cond);
+    }
+
+    function isPuzzleSolved() {
+        const p = levelsData[currentLevel - 1].puzzle;
+        const L = getLines(p);
+        if (!(L.rows.every(x => x.ok) && L.cols.every(x => x.ok))) return false;
+        for (let r = 0; r < p.R; r++)
+            for (let c = 0; c < p.C; c++)
+                if (hasSameNeighbor(p, r, c)) return false;
+        return true;
+    }
+
+    function checkPuzzle() {
+        if (busy) return;
+        busy = true;
+        clearInterval(timerInterval);
+        const container = document.getElementById("app");
+
+        if(isPuzzleSolved()) {
             playCorrectSound();
             container.classList.add("flash-correct");
             setTimeout(() => {
@@ -620,12 +728,14 @@
             container.classList.add("flash-wrong");
             setTimeout(() => {
                 container.classList.remove("flash-wrong");
-                gameOver("Bulmaca yanlış çözüldü! Kırmızı kutulardaki hedef toplamlar hatasız tutmalıdır. Elendiniz!");
+                gameOver("Bulmaca yanlış çözüldü! Hedef toplamlar tutmalı ve yan yana aynı sayı olmamalıdır. Elendiniz!");
             }, 800);
         }
     }
 
     function gameOver(reason) {
+        busy = true;
+        clearInterval(timerInterval);
         document.getElementById("screen-game").classList.add("hidden");
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("failReason").innerText = reason;
@@ -633,27 +743,41 @@
     }
 
     function loadQuestion() {
+        busy = false;
         const qData = levelsData[currentLevel - 1].question;
         document.getElementById("questionText").innerText = qData.q;
         const optContainer = document.getElementById("optionsContainer");
         optContainer.innerHTML = "";
-        qData.options.forEach((opt, idx) => {
+
+        // Şıkları karıştır (doğru cevap hep aynı yerde olmasın), A) B) C) D) harflerini yeniden ver
+        const letters = ["A", "B", "C", "D"];
+        const items = qData.options.map((opt, i) => ({ text: opt.replace(/^[A-D]\)\s*/, ""), correct: i === qData.answer }));
+        for (let i = items.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [items[i], items[j]] = [items[j], items[i]];
+        }
+        items.forEach((it, idx) => {
             const btn = document.createElement("button");
             btn.className = "option-btn";
-            btn.innerText = opt;
-            btn.onclick = () => { checkAnswer(idx, qData.answer); };
+            btn.innerText = letters[idx] + ") " + it.text;
+            btn.onclick = () => { checkAnswer(btn, it.correct); };
             optContainer.appendChild(btn);
         });
     }
 
-    function checkAnswer(selected, correct) {
+    function checkAnswer(btn, isCorrect) {
+        if (busy) return;                       // aynı soruya birden fazla puan verilmesini engeller
+        busy = true;
+        document.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
         const container = document.getElementById("app");
-        if(selected === correct) {
+        if(isCorrect) {
             score += 5;
+            btn.classList.add("correct");
             playCorrectSound();
             container.classList.add("flash-correct");
             setTimeout(() => { container.classList.remove("flash-correct"); }, 1000);
         } else {
+            btn.classList.add("wrong");
             playWrongSound();
             container.classList.add("flash-wrong");
             setTimeout(() => { container.classList.remove("flash-wrong"); }, 1000);
@@ -663,7 +787,7 @@
 
     function nextLevelOrFinish() {
         currentLevel++;
-        if(currentLevel <= 3) {
+        if(currentLevel <= levelsData.length) {
             document.getElementById("screen-question").classList.add("hidden");
             document.getElementById("screen-game").classList.remove("hidden");
             loadLevel();
@@ -675,29 +799,41 @@
     function showLeaderboard() {
         document.getElementById("screen-question").classList.add("hidden");
         document.getElementById("screen-leaderboard").classList.remove("hidden");
-        
-        let lb = JSON.parse(localStorage.getItem("tubitak_lb_v24") || "[]");
-        lb.push({ name: playerName, score: score });
+
+        let lb = [];
+        try { lb = JSON.parse(localStorage.getItem("tubitak_lb_v24") || "[]"); } catch (e) { lb = []; }
+        if (!Array.isArray(lb)) lb = [];
+        const me = { name: playerName, score: score };
+        lb.push(me);
         lb.sort((a,b) => b.score - a.score);
-        localStorage.setItem("tubitak_lb_v24", JSON.stringify(lb));
+        try { localStorage.setItem("tubitak_lb_v24", JSON.stringify(lb)); } catch (e) {}
 
         const tbody = document.getElementById("leaderboardBody");
         tbody.innerHTML = "";
-        
-        lb.forEach((item, index) => {
+
+        const addRow = (item, index) => {
+            const tr = document.createElement("tr");
+            if (item === me) tr.className = "me";
             let medal = "";
             if(index === 0) medal = "🥇 ";
             else if(index === 1) medal = "🥈 ";
             else if(index === 2) medal = "🥉 ";
 
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${medal}${index + 1}.</strong></td>
-                    <td>${item.name}</td>
-                    <td>${item.score} / 15 Puan</td>
-                </tr>
-            `;
-        });
+            const td1 = document.createElement("td");
+            const st = document.createElement("strong");
+            st.textContent = medal + (index + 1) + ".";
+            td1.appendChild(st);
+            const td2 = document.createElement("td");
+            td2.textContent = item.name;                 // textContent: isim içindeki HTML kodu çalışmaz
+            const td3 = document.createElement("td");
+            td3.textContent = item.score + " / 15 Puan";
+            tr.append(td1, td2, td3);
+            tbody.appendChild(tr);
+        };
+
+        lb.slice(0, 10).forEach(addRow);
+        const myIndex = lb.indexOf(me);
+        if (myIndex >= 10) addRow(me, myIndex);          // ilk 10'da değilsen de sıranı göster
     }
 </script>
 
