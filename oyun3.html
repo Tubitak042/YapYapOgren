@@ -65,6 +65,7 @@
             justify-content: center;
             gap: 15px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
         .stat-box {
             background: #21262d;
@@ -75,11 +76,9 @@
         }
         .stat-box span { color: #f0883e; }
 
-        /* KARMAŞIK LABİRENT IZGARASI (11x11) */
+        /* LABİRENT IZGARASI (boyut seviyeye göre JS ile ayarlanır) */
         .maze-board {
             display: grid;
-            grid-template-columns: repeat(11, 1fr);
-            grid-template-rows: repeat(11, 1fr);
             gap: 2px;
             background: #090d16;
             border: 2px solid #30363d;
@@ -87,7 +86,7 @@
             border-radius: 12px;
             width: 100%;
             max-width: 520px;
-            height: 520px;
+            aspect-ratio: 1 / 1;
             margin: 0 auto 15px auto;
         }
         .cell {
@@ -96,7 +95,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.1rem;
+            font-size: var(--fs, 1.1rem);
+            line-height: 1;
         }
         .cell.wall { background: #0d1117; border: 1px solid #21262d; }
         .cell.path { background: #21262d; }
@@ -159,6 +159,12 @@
             font-size: 0.95rem;
         }
         .opt-btn:hover { background: #30363d; }
+        .opt-btn:disabled { cursor: default; }
+        .opt-btn.correct { background: #238636; border-color: #2ea043; }
+        .opt-btn.wrong { background: #da3633; border-color: #f85149; }
+        .q-feedback { min-height: 1.4em; margin-top: 14px; font-weight: bold; }
+        .q-feedback.ok { color: #3fb950; }
+        .q-feedback.bad { color: #f85149; }
     </style>
 </head>
 <body>
@@ -166,8 +172,8 @@
 <div class="container">
     <div class="top-bar">
         <button class="btn-ana" onclick="location.href='index.html'">🏠 Ana Sayfa</button>
-        <div class="badge-version">SÜRÜM V2 - ÇIKIŞMAZ LABİRENT</div>
-        <button class="btn-ana" style="visibility: hidden;">🔇</button>
+        <div class="badge-version">SÜRÜM V3 - ÇIKIŞMAZ LABİRENT</div>
+        <button class="btn-ana" id="muteBtn" onclick="toggleMute()" title="Sesi aç/kapat">🔊</button>
     </div>
 
     <div class="header-title">
@@ -176,11 +182,12 @@
     </div>
 
     <div class="stats-bar">
+        <div class="stat-box">Seviye: <span id="level">1/6</span></div>
         <div class="stat-box">Puan: <span id="score">0</span></div>
         <div class="stat-box">Anahtarlar: <span id="keys">0/4</span></div>
     </div>
 
-    <!-- 11x11 Karmaşık Labirent Alanı -->
+    <!-- Labirent Alanı -->
     <div class="maze-board" id="board"></div>
 
     <!-- Yön Butonları -->
@@ -200,89 +207,287 @@
         <h3 style="color:#f85149; margin-bottom:10px;">🔒 KİLİTLİ KAPI!</h3>
         <p id="q-text" style="font-size:1.05rem; margin-bottom:15px;"></p>
         <div class="options-grid" id="q-options"></div>
+        <p class="q-feedback" id="q-feedback"></p>
     </div>
 </div>
 
 <script>
-    /* 
+    /*
       0: Duvar (Geçilemez çıkmaz sokaklar)
       1: Normal Yol
       2: Kilitli Kapı (Soru sorulacak)
       3: Hazine (Bitiş)
     */
-    const initialGrid = [
-        [1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-        [0, 1, 1, 2, 0, 1, 1, 1, 0, 1, 1],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 1],
-        [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
-        [1, 1, 2, 1, 1, 0, 1, 1, 1, 1, 1],
-        [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 1, 1, 1, 2, 1, 1, 1, 1, 1, 0],
-        [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-        [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3]
+
+    /* ---------- SEVİYE AYARLARI ----------
+       size  : labirent boyutu (tek sayı olmalı)
+       doors : çıkış yolundaki kilitli kapı sayısı
+    */
+    const LEVELS = [
+        { size: 11, doors: 4 },
+        { size: 13, doors: 5 },
+        { size: 15, doors: 6 },
+        { size: 17, doors: 6 },
+        { size: 19, doors: 7 },
+        { size: 21, doors: 8 }
     ];
 
-    // Labirent her sıfırlandığında güncellenmesi için kopya oluşturuyoruz
-    let gridLayout = JSON.parse(JSON.stringify(initialGrid));
-
-    const doors = [
-        { x: 3, y: 2, q: "Selçukluların Anadolu kapılarını açtığı Malazgirt Savaşı hangi yılda gerçekleşmiştir?", options: ["1071", "1453", "1923", "1299"], ans: "1071" },
-        { x: 6, y: 4, q: "İstanbul hangi padişah döneminde fethedilmiştir?", options: ["Fatih Sultan Mehmet", "Kanuni", "Yavuz", "II. Abdülhamid"], ans: "Fatih Sultan Mehmet" },
-        { x: 2, y: 6, q: "Mustafa Kemal Atatürk Samsun'a hangi yılda çıkmıştır?", options: ["1919", "1920", "1923", "1915"], ans: "1919" },
-        { x: 4, y: 8, q: "Türkiye Cumhuriyeti kaç yılında ilan edilmiştir?", options: ["1923", "1920", "1919", "1924"], ans: "1923" }
+    /* ---------- TARİH SORU HAVUZU ---------- */
+    const QUESTION_POOL = [
+        { q: "Selçukluların Anadolu kapılarını açtığı Malazgirt Savaşı hangi yılda gerçekleşmiştir?", options: ["1071", "1453", "1923", "1299"], ans: "1071" },
+        { q: "İstanbul hangi padişah döneminde fethedilmiştir?", options: ["Fatih Sultan Mehmet", "Kanuni", "Yavuz", "II. Abdülhamid"], ans: "Fatih Sultan Mehmet" },
+        { q: "Mustafa Kemal Atatürk Samsun'a hangi yılda çıkmıştır?", options: ["1919", "1920", "1923", "1915"], ans: "1919" },
+        { q: "Türkiye Cumhuriyeti kaç yılında ilan edilmiştir?", options: ["1923", "1920", "1919", "1924"], ans: "1923" },
+        { q: "Anadolu Selçuklu Devleti'nin uzun süre başkentliğini yapan şehir hangisidir?", options: ["Konya", "Bursa", "Edirne", "Sivas"], ans: "Konya" },
+        { q: "Mevlânâ Celâleddîn-i Rûmî'nin türbesi hangi şehirdedir?", options: ["Konya", "Ankara", "Kayseri", "Erzurum"], ans: "Konya" },
+        { q: "Dünyanın bilinen en eski yerleşimlerinden Çatalhöyük hangi ilimizdedir?", options: ["Konya", "Şanlıurfa", "Çorum", "Mardin"], ans: "Konya" },
+        { q: "Göbeklitepe hangi ilimizde bulunmaktadır?", options: ["Şanlıurfa", "Konya", "Van", "Hatay"], ans: "Şanlıurfa" },
+        { q: "Osmanlı Devleti'nin kurucusu kimdir?", options: ["Osman Bey", "Orhan Bey", "I. Murad", "Yıldırım Bayezid"], ans: "Osman Bey" },
+        { q: "Osmanlı Devleti hangi yılda kurulmuştur?", options: ["1299", "1071", "1453", "1517"], ans: "1299" },
+        { q: "Anadolu Selçuklularının Bizans'a karşı kazandığı Miryokefalon Savaşı hangi yılda yapılmıştır?", options: ["1176", "1071", "1243", "1402"], ans: "1176" },
+        { q: "Anadolu Selçuklu Devleti'nin yıkılışını hızlandıran Kösedağ Savaşı hangi yılda olmuştur?", options: ["1243", "1176", "1389", "1526"], ans: "1243" },
+        { q: "Kösedağ Savaşı'nda Anadolu Selçuklularını yenen devlet hangisidir?", options: ["Moğollar", "Bizanslılar", "Haçlılar", "Memlükler"], ans: "Moğollar" },
+        { q: "Yıldırım Bayezid, Ankara Savaşı'nda (1402) kime yenilmiştir?", options: ["Timur", "Cengiz Han", "Emir Sultan", "Çaka Bey"], ans: "Timur" },
+        { q: "Kanuni Sultan Süleyman'ın Macaristan'a karşı kazandığı 1526 tarihli savaş hangisidir?", options: ["Mohaç Meydan Muharebesi", "Preveze Deniz Savaşı", "Çaldıran Savaşı", "Mercidabık Savaşı"], ans: "Mohaç Meydan Muharebesi" },
+        { q: "Barbaros Hayrettin Paşa'nın 1538'de kazandığı deniz savaşı hangisidir?", options: ["Preveze", "Çanakkale", "İnebahtı", "Sinop"], ans: "Preveze" },
+        { q: "Yavuz Sultan Selim'in 1514'te Safevilere karşı kazandığı savaş hangisidir?", options: ["Çaldıran", "Mohaç", "Ridaniye", "Niğbolu"], ans: "Çaldıran" },
+        { q: "Çanakkale Kara Savaşları ve Deniz Zaferi hangi yılda yaşanmıştır?", options: ["1915", "1912", "1918", "1920"], ans: "1915" },
+        { q: "Türkiye Büyük Millet Meclisi hangi yılda Ankara'da açılmıştır?", options: ["1920", "1919", "1922", "1923"], ans: "1920" },
+        { q: "Kurtuluş Savaşı'nda Yunan ordusunun Ankara'ya ilerleyişi hangi savaşla durdurulmuştur?", options: ["Sakarya Meydan Muharebesi", "Dumlupınar", "Kütahya-Eskişehir", "Kocatepe"], ans: "Sakarya Meydan Muharebesi" },
+        { q: "Sakarya Meydan Muharebesi hangi yılda yapılmıştır?", options: ["1921", "1920", "1922", "1919"], ans: "1921" },
+        { q: "Büyük Taarruz (Başkomutanlık Meydan Muharebesi) hangi yıl yapılmıştır?", options: ["1922", "1921", "1923", "1920"], ans: "1922" },
+        { q: "Türkiye'nin sınırlarını belirleyen Lozan Barış Antlaşması hangi yılda imzalanmıştır?", options: ["1923", "1920", "1922", "1925"], ans: "1923" },
+        { q: "Osmanlı Devleti'ni paylaşmayı amaçlayan ve TBMM tarafından tanınmayan antlaşma hangisidir?", options: ["Sevr", "Lozan", "Mondros", "Mudanya"], ans: "Sevr" },
+        { q: "Harf Devrimi ile yeni Türk harfleri hangi yılda kabul edilmiştir?", options: ["1928", "1923", "1934", "1925"], ans: "1928" },
+        { q: "Kadınlara milletvekili seçme ve seçilme hakkı hangi yılda verilmiştir?", options: ["1934", "1923", "1928", "1930"], ans: "1934" },
+        { q: "Mustafa Kemal Atatürk hangi yılda doğmuştur?", options: ["1881", "1876", "1890", "1871"], ans: "1881" },
+        { q: "Erzurum ve Sivas Kongreleri hangi yılda toplanmıştır?", options: ["1919", "1920", "1921", "1918"], ans: "1919" },
+        { q: "Orhun Yazıtları hangi Türk devletine aittir?", options: ["Göktürkler", "Uygurlar", "Hunlar", "Karahanlılar"], ans: "Göktürkler" },
+        { q: "İslamiyet'i kabul eden ilk büyük Türk devleti hangisidir?", options: ["Karahanlılar", "Göktürkler", "Uygurlar", "Hunlar"], ans: "Karahanlılar" }
     ];
 
+    /* ---------- SES EFEKTLERİ (dosya gerektirmez, tarayıcıda üretilir) ---------- */
+    let audioCtx = null;
+    let muted = false;
+
+    function getCtx() {
+        if (!audioCtx) {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return null;
+            audioCtx = new AC();
+        }
+        if (audioCtx.state === "suspended") audioCtx.resume();
+        return audioCtx;
+    }
+
+    function tone(freq, start, dur, type = "sine", vol = 0.15, endFreq) {
+        if (muted) return;
+        const ctx = getCtx();
+        if (!ctx) return;
+        const t = ctx.currentTime + start;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, t);
+        if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, t + dur);
+        gain.gain.setValueAtTime(vol, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + dur + 0.02);
+    }
+
+    function playSound(name) {
+        if (name === "step") {            // butona basma sesi
+            tone(520, 0, 0.05, "square", 0.06);
+            tone(380, 0.02, 0.04, "square", 0.04);
+        } else if (name === "correct") {  // doğru cevap: yükselen neşeli nota
+            tone(523, 0, 0.15, "sine", 0.2);
+            tone(659, 0.12, 0.15, "sine", 0.2);
+            tone(784, 0.24, 0.35, "sine", 0.2);
+        } else if (name === "wrong") {    // yanlış cevap: alçalan boğuk ses
+            tone(220, 0, 0.25, "sawtooth", 0.15, 110);
+            tone(150, 0.2, 0.4, "sawtooth", 0.15, 70);
+        } else if (name === "win") {      // seviye tamamlandı
+            [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.12, i === 3 ? 0.5 : 0.15, "triangle", 0.2));
+        }
+    }
+
+    function toggleMute() {
+        muted = !muted;
+        document.getElementById("muteBtn").innerText = muted ? "🔇" : "🔊";
+        if (!muted) playSound("step");
+    }
+
+    /* ---------- OYUN DURUMU ---------- */
+    let levelIndex = 0;
+    let size = LEVELS[0].size;
+    let baseLayout = [];     // seviyenin ilk hali (sıfırlama için)
+    let gridLayout = [];     // oynanan hali
+    let doors = [];
     let robot = { x: 0, y: 0 };
     let keys = 0;
     let score = 0;
+    let levelStartScore = 0;
+    let locked = false;      // soru penceresi açıkken hareket engellenir
+    let deck = [];           // tekrarsız soru destesi
 
+    /* ---------- YARDIMCI FONKSİYONLAR ---------- */
+    function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function drawQuestion() {
+        if (deck.length === 0) deck = shuffle(QUESTION_POOL);
+        return deck.pop();
+    }
+
+    /* ---------- RASTGELE LABİRENT ÜRETİMİ ----------
+       Derinlik öncelikli arama ile "mükemmel" labirent üretilir:
+       her iki nokta arasında tek bir yol vardır, çok sayıda çıkmaz sokak oluşur.
+    */
+    function generateMaze(n) {
+        const g = Array.from({ length: n }, () => Array(n).fill(0));
+        const stack = [[0, 0]];
+        g[0][0] = 1;
+
+        while (stack.length) {
+            const [x, y] = stack[stack.length - 1];
+            const options = shuffle([[2, 0], [-2, 0], [0, 2], [0, -2]]).filter(([dx, dy]) => {
+                const nx = x + dx, ny = y + dy;
+                return nx >= 0 && ny >= 0 && nx < n && ny < n && g[ny][nx] === 0;
+            });
+            if (options.length === 0) { stack.pop(); continue; }
+            const [dx, dy] = options[0];
+            g[y + dy / 2][x + dx / 2] = 1;
+            g[y + dy][x + dx] = 1;
+            stack.push([x + dx, y + dy]);
+        }
+        g[n - 1][n - 1] = 3;
+        return g;
+    }
+
+    // Başlangıçtan hazineye giden tek yolu bulur (BFS)
+    function findPath(g, n) {
+        const prev = {};
+        const queue = [[0, 0]];
+        prev["0,0"] = null;
+        while (queue.length) {
+            const [x, y] = queue.shift();
+            if (x === n - 1 && y === n - 1) break;
+            for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+                const nx = x + dx, ny = y + dy;
+                if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
+                if (g[ny][nx] === 0 || prev[nx + "," + ny] !== undefined) continue;
+                prev[nx + "," + ny] = [x, y];
+                queue.push([nx, ny]);
+            }
+        }
+        const path = [];
+        let cur = [n - 1, n - 1];
+        while (cur) {
+            path.push(cur);
+            cur = prev[cur[0] + "," + cur[1]];
+        }
+        return path.reverse();
+    }
+
+    // Kilitli kapıları çıkış yolu üzerine eşit aralıklarla yerleştirir
+    function placeDoors(g, path, count) {
+        const list = [];
+        const usable = path.length - 2;            // başlangıç ve hazine hariç
+        const used = new Set();
+        for (let k = 1; k <= count; k++) {
+            let idx = Math.round((usable * k) / (count + 1));
+            idx = Math.min(usable, Math.max(1, idx));
+            while (used.has(idx) && idx < usable) idx++;
+            used.add(idx);
+            const [x, y] = path[idx];
+            const item = drawQuestion();
+            g[y][x] = 2;
+            list.push({ x, y, q: item.q, options: item.options, ans: item.ans });
+        }
+        return list;
+    }
+
+    /* ---------- SEVİYE KURULUMU ---------- */
+    function startLevel() {
+        const cfg = LEVELS[levelIndex];
+        size = cfg.size;
+        const maze = generateMaze(size);
+        const path = findPath(maze, size);
+        doors = placeDoors(maze, path, cfg.doors);
+        baseLayout = JSON.parse(JSON.stringify(maze));
+        levelStartScore = score;
+        resetLevel();
+    }
+
+    // Aynı labirenti ilk haline döndürür (yanlış cevap sonrası)
+    function resetLevel() {
+        gridLayout = JSON.parse(JSON.stringify(baseLayout));
+        robot = { x: 0, y: 0 };
+        keys = 0;
+        score = levelStartScore;
+        locked = false;
+        updateStats();
+        drawBoard();
+    }
+
+    function updateStats() {
+        document.getElementById("level").innerText = `${levelIndex + 1}/${LEVELS.length}`;
+        document.getElementById("keys").innerText = `${keys}/${doors.length}`;
+        document.getElementById("score").innerText = score;
+    }
+
+    /* ---------- ÇİZİM ---------- */
     function drawBoard() {
         const board = document.getElementById("board");
         board.innerHTML = "";
+        board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+        board.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+        board.style.setProperty("--fs", (11 / size * 1.1).toFixed(2) + "rem");
 
-        for (let r = 0; r < 11; r++) {
-            for (let c = 0; c < 11; c++) {
+        const frag = document.createDocumentFragment();
+        for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
                 const cell = document.createElement("div");
                 cell.className = "cell";
                 const type = gridLayout[r][c];
 
                 if (type === 0) cell.classList.add("wall");
-                else {
-                    cell.classList.add("path");
-                }
+                else cell.classList.add("path");
 
-                // Robot
-                if (robot.x === c && robot.y === r) {
-                    cell.innerText = "🤖";
-                } 
-                // Kapılar
-                else if (type === 2) {
-                    cell.innerText = "🔒";
-                }
-                // Hazine
-                else if (type === 3) {
-                    cell.innerText = "🏆";
-                }
+                if (robot.x === c && robot.y === r) cell.innerText = "🤖";
+                else if (type === 2) cell.innerText = "🔒";
+                else if (type === 3) cell.innerText = "🏆";
 
-                board.appendChild(cell);
+                frag.appendChild(cell);
             }
         }
+        board.appendChild(frag);
     }
 
+    /* ---------- HAREKET ---------- */
     function move(dx, dy) {
-        let newX = robot.x + dx;
-        let newY = robot.y + dy;
+        if (locked) return;
 
-        if (newX < 0 || newX >= 11 || newY < 0 || newY >= 11) return;
+        const newX = robot.x + dx;
+        const newY = robot.y + dy;
 
-        let targetType = gridLayout[newY][newX];
+        if (newX < 0 || newX >= size || newY < 0 || newY >= size) return;
+
+        const targetType = gridLayout[newY][newX];
 
         if (targetType === 0) return; // Çıkmaz sokak / Duvar, geçilemez!
 
         if (targetType === 2) { // Kilitli Kapı
-            let currentDoorObj = doors.find(d => d.x === newX && d.y === newY);
+            const currentDoorObj = doors.find(d => d.x === newX && d.y === newY);
             openQuestionModal(currentDoorObj);
             return;
         }
@@ -291,76 +496,113 @@
             robot.x = newX;
             robot.y = newY;
             drawBoard();
-            setTimeout(() => {
-                alert(`🎉 TEBRİKLER! Karmaşık labirenti çözdün ve hazineye ulaştın!\nToplam Puan: ${score}`);
-                resetGame();
-            }, 300);
+            locked = true;
+            playSound("win");
+            setTimeout(levelComplete, 900);
             return;
         }
 
         robot.x = newX;
         robot.y = newY;
+        playSound("step");
         drawBoard();
     }
 
+    function levelComplete() {
+        if (levelIndex < LEVELS.length - 1) {
+            alert(`🎉 TEBRİKLER! ${levelIndex + 1}. seviyeyi çözdün ve hazineye ulaştın!\nToplam Puan: ${score}\nSıradaki labirent daha büyük ve daha karmaşık!`);
+            levelIndex++;
+            startLevel();
+        } else {
+            alert(`🏆 MUHTEŞEM! Tüm labirentleri çözdün!\nToplam Puan: ${score}\nİstersen en baştan tekrar oynayabilirsin.`);
+            resetGame();
+        }
+    }
+
+    /* ---------- SORU PENCERESİ ---------- */
     function openQuestionModal(door) {
+        locked = true;
+        answering = false;
         document.getElementById("q-text").innerText = door.q;
+        const fb = document.getElementById("q-feedback");
+        fb.innerText = "";
+        fb.className = "q-feedback";
         const optsContainer = document.getElementById("q-options");
         optsContainer.innerHTML = "";
 
-        door.options.forEach(opt => {
+        shuffle(door.options).forEach(opt => {
             const btn = document.createElement("button");
             btn.className = "opt-btn";
             btn.innerText = opt;
-            btn.onclick = () => answerQuestion(opt, door);
+            btn.onclick = () => answerQuestion(opt, door, btn);
             optsContainer.appendChild(btn);
         });
 
         document.getElementById("questionModal").style.display = "flex";
     }
 
-    function answerQuestion(selected, door) {
-        document.getElementById("questionModal").style.display = "none";
+    let answering = false;
 
-        if (selected === door.ans) {
-            alert("🔑 DOĞRU CEVAP! Kapı açıldı ve 1 anahtar kazandın.");
-            keys++;
-            score += 25;
-            document.getElementById("keys").innerText = `${keys}/4`;
-            document.getElementById("score").innerText = score;
+    function answerQuestion(selected, door, btn) {
+        if (answering) return;
+        answering = true;
 
-            // Kapıyı açık yola dönüştür
-            gridLayout[door.y][door.x] = 1;
-            robot.x = door.x;
-            robot.y = door.y;
-            drawBoard();
+        const correct = selected === door.ans;
+        const fb = document.getElementById("q-feedback");
+        document.querySelectorAll("#q-options .opt-btn").forEach(b => b.disabled = true);
+
+        if (correct) {
+            btn.classList.add("correct");               // yeşil
+            fb.innerText = "🔑 DOĞRU CEVAP! Kapı açıldı, 1 anahtar kazandın. (+25 puan)";
+            fb.className = "q-feedback ok";
+            playSound("correct");
         } else {
-            alert("❌ YANLIŞ CEVAP! Çıkmaz sokakta kayboldun, labirentin başına dönüyorsun!");
-            resetGame();
+            btn.classList.add("wrong");                 // kırmızı
+            fb.innerText = "❌ YANLIŞ CEVAP! Çıkmaz sokakta kayboldun, labirentin başına dönüyorsun!";
+            fb.className = "q-feedback bad";
+            playSound("wrong");
         }
+
+        // Rengi ve sesi görebilmek için kısa bir bekleme
+        setTimeout(() => {
+            document.getElementById("questionModal").style.display = "none";
+            answering = false;
+
+            if (correct) {
+                keys++;
+                score += 25;
+
+                // Kapıyı açık yola dönüştür
+                gridLayout[door.y][door.x] = 1;
+                robot.x = door.x;
+                robot.y = door.y;
+                locked = false;
+                updateStats();
+                drawBoard();
+            } else {
+                resetLevel();
+            }
+        }, 1300);
     }
 
+    /* ---------- OYUNU BAŞTAN BAŞLAT ---------- */
     function resetGame() {
-        robot = { x: 0, y: 0 };
-        keys = 0;
+        levelIndex = 0;
         score = 0;
-        document.getElementById("keys").innerText = "0/4";
-        document.getElementById("score").innerText = "0";
-
-        // Labirenti ve kapıları ilk haline sıfırla
-        gridLayout = JSON.parse(JSON.stringify(initialGrid));
-        drawBoard();
+        deck = [];
+        startLevel();
     }
 
     // Klavye yön tuşları veya W-A-S-D desteği
     window.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowUp" || e.key === "w") move(0, -1);
-        if (e.key === "ArrowDown" || e.key === "s") move(0, 1);
-        if (e.key === "ArrowLeft" || e.key === "a") move(-1, 0);
-        if (e.key === "ArrowRight" || e.key === "d") move(1, 0);
+        const k = e.key.toLowerCase();
+        if (k === "arrowup" || k === "w") { e.preventDefault(); move(0, -1); }
+        if (k === "arrowdown" || k === "s") { e.preventDefault(); move(0, 1); }
+        if (k === "arrowleft" || k === "a") { e.preventDefault(); move(-1, 0); }
+        if (k === "arrowright" || k === "d") { e.preventDefault(); move(1, 0); }
     });
 
-    drawBoard();
+    resetGame();
 </script>
 
 </body>
